@@ -41,12 +41,22 @@ def update_eink_display():
     epd.init()
     print("E-paper initialized.")
     epd.Clear()
-
+    
     # Capture the current calendar window as an image
     x0 = root.winfo_rootx()
     y0 = root.winfo_rooty()
     x1 = x0 + root.winfo_width()
     y1 = y0 + root.winfo_height()
+
+    # Define the target screenshot size
+    target_width = 960
+    target_height = 680
+
+    # Calculate the coordinates to capture a 960x680 area centered in the window
+    x0 = window_x + (window_width - target_width) // 2
+    y0 = window_y + (window_height - target_height) // 2
+    x1 = x0 + target_width
+    y1 = y0 + target_height
 
     # Save the screenshot of the window
     screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
