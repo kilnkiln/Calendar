@@ -3,6 +3,7 @@ import calendar
 from datetime import datetime
 import os
 from PIL import ImageGrab  # To capture the screen as an image
+from PIL import Image
 import plots  # Import the plots module
 from waveshare_epd import epd13in3k  # Import the Waveshare e-Paper library for display
 
@@ -47,13 +48,22 @@ def update_eink_display():
 
     # Save the screenshot of the window
     screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
-    screenshot.save('/home/admin/CalendarDatabase/calendar_view.png')
+    image_directory = '/home/admin/CalendarDatabase'
+    image_path = os.path.join(image_directory, 'calendar_view.png')
+    try:
+        screenshot.save(image_path)
+    except Exception as e:
+        print(f"Error saving image: {e}")
+
+    screenshot.save("calendar_view.png")
 
     # Display the screenshot on the e-ink screen
-    image = Image.open("calendar_view.png")
-    epd.display(epd.getbuffer(image))
-    epd.sleep()
-    update_eink_display('/home/admin/CalendarDatabase/calendar_view.png')
+    try:
+        image = Image.open(image_path)
+        epd.display(epd.getbuffer(image))
+        epd.sleep()
+    except Exception as e:
+        print(f"Error displaying image on e-paper: {e}")
     
 def display_calendar(year):
     # Directory for saving calendar data
@@ -282,3 +292,4 @@ def display_calendar(year):
 # Load the current year
 current_year = datetime.now().year
 display_calendar(current_year)
+update_eink_display()  # Call the e-ink update after displaying the calendar
