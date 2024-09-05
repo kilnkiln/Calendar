@@ -36,8 +36,10 @@ def generate_calendar_matrix(year):
 
 # Function to update the e-ink display with the current calendar view
 def update_eink_display():
+    print("Starting e-ink display update...")
     epd = epd13in3k.EPD()
     epd.init()
+    print("E-paper initialized.")
     epd.Clear()
 
     # Capture the current calendar window as an image
@@ -51,7 +53,9 @@ def update_eink_display():
     image_directory = '/home/admin/CalendarDatabase'
     image_path = os.path.join(image_directory, 'calendar_view.png')
     try:
+        print("Capturing screenshot...")
         screenshot.save(image_path)
+        print(f"Screenshot saved to {image_path}")
     except Exception as e:
         print(f"Error saving image: {e}")
 
@@ -59,8 +63,10 @@ def update_eink_display():
 
     # Display the screenshot on the e-ink screen
     try:
+        print("Displaying screenshot on e-ink screen...")
         image = Image.open(image_path)
         epd.display(epd.getbuffer(image))
+        print("Image displayed successfully.")
         epd.sleep()
     except Exception as e:
         print(f"Error displaying image on e-paper: {e}")
