@@ -67,6 +67,7 @@ def update_eink_display():
     
 def display_calendar(year):
     # Directory for saving calendar data
+    global root
     directory = '/home/admin/CalendarDatabase'
     if not os.path.exists(directory):
         os.makedirs(directory)
