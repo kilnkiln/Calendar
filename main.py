@@ -33,7 +33,7 @@ def generate_calendar_matrix(year):
 
 def display_calendar(year):
     # Directory for saving calendar data
-    directory = '/home/admin/Calendar'
+    directory = '/home/admin/CalendarDatabase'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
