@@ -43,11 +43,16 @@ def update_eink_display():
     epd.Clear()
     
     # Capture the current calendar window as an image
-    x0 = root.winfo_rootx()
-    y0 = root.winfo_rooty()
-    x1 = x0 + root.winfo_width()
-    y1 = y0 + root.winfo_height()
+    #x0 = root.winfo_rootx()
+    #y0 = root.winfo_rooty()
+    #x1 = x0 + root.winfo_width()
+    #y1 = y0 + root.winfo_height()
 
+    window_x = root.winfo_rootx()
+    window_y = root.winfo_rooty()
+    window_width = root.winfo_width()
+    window_height = root.winfo_height()
+    
     # Define the target screenshot size
     target_width = 960
     target_height = 680
