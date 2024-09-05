@@ -52,7 +52,7 @@ def update_eink_display():
     window_y = root.winfo_rooty()
     window_width = root.winfo_width()
     window_height = root.winfo_height()
-    
+
     # Define the target screenshot size
     target_width = 960
     target_height = 680
@@ -101,7 +101,15 @@ def display_calendar(year):
     root.title(f"Calendar for {year}")
 
     # Set the window to full screen
-    root.attributes('-fullscreen', True)
+    #root.attributes('-fullscreen', True)
+
+    # Set the window size to 960x680
+    window_width = 960
+    window_height = 680
+    root.geometry(f"{window_width}x{window_height}")
+
+    # Set the window to non-resizable, so the size stays fixed
+    #root.resizable(False, False)
 
     # Function to toggle full-screen mode
     def toggle_fullscreen(event=None):
