@@ -11,7 +11,7 @@ shaded_days_per_month = {i: 0 for i in range(1, 13)}
 def load_shaded_days(year):
     """Load the shaded days from a file for the given year."""
     global shaded_days_per_month
-    directory = 'C:\\Calendar'
+    directory = '/home/admin/CalendarDatabase'
     file_path = os.path.join(directory, f'{year}.txt')
 
     shaded_days_per_month = {i: 0 for i in range(1, 13)}
