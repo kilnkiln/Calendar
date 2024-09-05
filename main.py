@@ -2,14 +2,16 @@ import tkinter as tk
 import calendar
 from datetime import datetime
 import os
+from PIL import Image
 from PIL import ImageGrab  # To capture the screen as an image
 import plots  # Import the plots module
 from waveshare_epd import epd13in3k  # Import the Waveshare e-Paper library for display
 
+
 def generate_calendar_matrix(year):
-    # List to hold the calendar rowsepaper
+    # List to hold the calendar rows
     calendar_matrix = []
-    
+
     # Iterate through each month of the year
     for month in range(1, 13):
         # Get the starting day of the month (0=Monday, ..., 6=Sunday)
@@ -22,41 +24,43 @@ def generate_calendar_matrix(year):
         # Create the row for the current month with month name at the start
         # The row should have 7 slots (1 for each weekday) + max 31 days + 1 for month name
         month_row = [month_name] + [''] * (7 + num_days)
-        
+
         # Place the days of the month in the correct positions
         for day in range(1, num_days + 1):
             position = start_day + day - 1  # adjust position for zero-based index
             month_row[position + 1] = day  # +1 to account for month name in position 0
-        
+
         # Append the row to the matrix
         calendar_matrix.append(month_row)
 
     return calendar_matrix
 
 # Function to update the e-ink display with the current calendar view
-def update_eink_display():
+def update_eink_display(image_path):
     epd = epd13in3k.EPD()
     epd.init()
     epd.Clear()
-
-    # Capture the current calendar window as an image
-    x0 = root.winfo_rootx()
-    y0 = root.winfo_rooty()
-    x1 = x0 + root.winfo_width()
-    y1 = y0 + root.winfo_height()
-
-    # Save the screenshot of the window
-    screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
-    screenshot.save("calendar_view.png")
-
-    # Display the screenshot on the e-ink screen
-    image = Image.open("calendar_view.png")
+    image = Image.open(image_path)
     epd.display(epd.getbuffer(image))
     epd.sleep()
+
+def save_calendar_as_bmp():
+    root.update()
+    x = root.winfo_rootx()
+    y = root.winfo_rooty()
+    x1 = x + root.winfo_width()
+    y1 = y + root.winfo_height()
+    screenshot = ImageGrab.grab().crop((x, y, x1, y1))
+    screenshot = screenshot.resize((960, 680), Image.ANTIALIAS)
     
+    screenshot.save("calendar_output.bmp", "BMP")
+    
+    # Update the e-ink display with the new image
+    update_eink_display('calendar_output.bmp')
+
 def display_calendar(year):
     # Directory for saving calendar data
-    directory = '/home/admin/CalendarDatabase'
+    directory = '/home/admin/Calendar'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -98,12 +102,12 @@ def display_calendar(year):
     num_columns = len(weekday_abbr) + 31  # 7 for weekdays, 31 for max days in a month
 
     # Display the year as a centered header
-    header = tk.Label(frame, text=str(year), font=('Arial', 16), anchor='center', bg='white')
+    header = tk.Label(frame, text=str(year), font=('Arial', 20), anchor='center', bg='white')
     header.grid(row=0, column=0, columnspan=num_columns, pady=10)
 
     # Display the weekdays as the top row, repeating them for a full width
     for i in range(1, 37):  # Columns 1 to 31 for days of the month
-        day_label = tk.Label(frame, text=weekday_abbr[(i - 1) % 7], font=('Arial', 10, 'bold'), bg='white')
+        day_label = tk.Label(frame, text=weekday_abbr[(i - 1) % 7], font=('Arial', 20, 'bold'), bg='white')
         day_label.grid(row=1, column=i, padx=2, pady=2, sticky='nsew')
 
     # Get the current date
@@ -128,12 +132,12 @@ def display_calendar(year):
     # Flag to check if selection has started
     selection_started = False
 
-    # Function to draw the selection ring around the current day
     def draw_selection_ring():
         for (month_idx, day_idx), canvas in day_canvases.items():
             canvas.delete('ring')
             if month_idx == current_month_index and day_idx == current_day_index:
                 canvas.create_oval(2, 2, day_width - 2, day_width - 2, outline='gray', width=2, tags='ring')
+        save_calendar_as_bmp()  # Save and update display after drawing ring
 
     # Function to toggle the circle on a day
     def toggle_circle(month_idx, day_idx):
@@ -198,8 +202,9 @@ def display_calendar(year):
                 while current_day_index > month_days[current_month_index] or (current_month_index, current_day_index) not in day_canvases:
                     current_day_index -= 1
 
-        # Draw the ring after moving
+        # Draw the ring after moving and update the display
         draw_selection_ring()
+        save_calendar_as_bmp()  # Save and update display after moving
 
         # Reset the timer
         if ring_timer_id is not None:
@@ -209,6 +214,7 @@ def display_calendar(year):
     # Function to toggle shading with the space bar
     def toggle_shading(event):
         toggle_circle(current_month_index, current_day_index)
+        save_calendar_as_bmp()  # Save and update display after toggling shading
 
     # Function to clear the selection ring after a timeout
     def clear_selection_ring():
@@ -253,7 +259,7 @@ def display_calendar(year):
     # Display the month rows
     for month_index, row in enumerate(calendar_matrix):
         # Display the month name
-        month_label = tk.Label(frame, text=row[0], font=('Arial', 10, 'bold'), bg='white')
+        month_label = tk.Label(frame, text=row[0], font=('Arial', 20, 'bold'), bg='white')
         month_label.grid(row=month_index + 2, column=0, padx=5, pady=5, sticky="W")
 
         # Display the days of the month
@@ -262,7 +268,7 @@ def display_calendar(year):
             if day != '':
                 # Create a canvas for each day to allow for drawing
                 canvas = tk.Canvas(frame, width=day_width, height=day_width, bg='white', highlightthickness=0)
-                canvas.create_text(day_width / 2, day_width / 2, text=str(day).zfill(2), font=('Arial', 10), tags='day')
+                canvas.create_text(day_width / 2, day_width / 2, text=str(day).zfill(2), font=('Arial', 20), tags='day')
                 canvas.grid(row=month_index + 2, column=day_index, padx=2, pady=2, sticky='nsew')
                 
                 # Store the canvas reference for toggling and navigation
