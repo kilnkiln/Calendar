@@ -2,7 +2,9 @@ import tkinter as tk
 import calendar
 from datetime import datetime
 import os
+from PIL import ImageGrab  # To capture the screen as an image
 import plots  # Import the plots module
+from waveshare_epd import epd13in3k  # Import the Waveshare e-Paper library for display
 
 def generate_calendar_matrix(year):
     # List to hold the calendar rowsepaper
@@ -31,6 +33,27 @@ def generate_calendar_matrix(year):
 
     return calendar_matrix
 
+# Function to update the e-ink display with the current calendar view
+def update_eink_display():
+    epd = epd13in3k.EPD()
+    epd.init()
+    epd.Clear()
+
+    # Capture the current calendar window as an image
+    x0 = root.winfo_rootx()
+    y0 = root.winfo_rooty()
+    x1 = x0 + root.winfo_width()
+    y1 = y0 + root.winfo_height()
+
+    # Save the screenshot of the window
+    screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
+    screenshot.save("calendar_view.png")
+
+    # Display the screenshot on the e-ink screen
+    image = Image.open("calendar_view.png")
+    epd.display(epd.getbuffer(image))
+    epd.sleep()
+    
 def display_calendar(year):
     # Directory for saving calendar data
     directory = '/home/admin/CalendarDatabase'
