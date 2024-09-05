@@ -59,7 +59,7 @@ def update_eink_display():
     except Exception as e:
         print(f"Error saving image: {e}")
 
-    screenshot.save("calendar_view.png")
+    #screenshot.save("calendar_view.png") this one may be redundant
 
     # Display the screenshot on the e-ink screen
     try:
@@ -295,7 +295,7 @@ def display_calendar(year):
 
      # After rendering the calendar, call the e-ink update after a small delay
     root.after(1000, update_eink_display)  # Schedule the e-ink update after 1 second
-    
+
     # Run the application
     root.mainloop()
 
