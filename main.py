@@ -33,7 +33,7 @@ def generate_calendar_matrix(year):
 
 def display_calendar(year):
     # Directory for saving calendar data
-    directory = 'C:\\Calendar'
+    directory = '/home/admin/Calendar'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
