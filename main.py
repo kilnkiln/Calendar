@@ -47,12 +47,13 @@ def update_eink_display():
 
     # Save the screenshot of the window
     screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
-    screenshot.save("calendar_view.png")
+    screenshot.save('/home/admin/CalendarDatabase/calendar_view.png')
 
     # Display the screenshot on the e-ink screen
     image = Image.open("calendar_view.png")
     epd.display(epd.getbuffer(image))
     epd.sleep()
+    update_eink_display('/home/admin/CalendarDatabase/calendar_view.png')
     
 def display_calendar(year):
     # Directory for saving calendar data
