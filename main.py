@@ -90,7 +90,7 @@ def update_eink_display_partial():
     """Partial refresh of a specific area on the e-paper display."""
     global root  # Access the global root window
     epd = epd13in3k.EPD()
-    epd.init()  # Initialize the e-paper display
+    epd.init_Part()  # Initialize the e-paper display
 
     # Save the screenshot of the partial area that has changed
     image_directory = '/home/admin/CalendarDatabase'
@@ -110,7 +110,7 @@ def update_eink_display_partial():
     # Display the partial screenshot on the e-ink screen
     try:
         image = Image.open(image_path)
-        epd.display_partial(epd.getbuffer(image))  # Use partial update to refresh only this area
+        epd.display_Partial(epd.getbuffer(image))  # Use partial update to refresh only this area
         epd.sleep()
     except Exception as e:
         print(f"Error displaying partial image on e-paper: {e}")
