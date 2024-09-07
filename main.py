@@ -109,7 +109,7 @@ def update_eink_display_partial(x0, y0, x1, y1):
 
     # Display the partial screenshot on the e-ink screen
     try:
-        image = Image.open(image_path)
+        image = Image.open(image_path).convert('1')  # Ensure image is converted to 1-bit mode
         # Convert the bounding box coordinates to the appropriate range for the e-paper
         epd_width = epd.width
         epd_height = epd.height
@@ -119,7 +119,14 @@ def update_eink_display_partial(x0, y0, x1, y1):
         Ystart = int((y0 / root.winfo_screenheight()) * epd_height)
         Xend = int((x1 / root.winfo_screenwidth()) * epd_width)
         Yend = int((y1 / root.winfo_screenheight()) * epd_height)
-
+         
+        # Ensure that the buffer is properly created from the image
+        image_buffer = epd.getbuffer(image)  # Convert image to buffer
+        
+        # Check that the image_buffer is not a list but a valid buffer type
+        if isinstance(image_buffer, list):
+            raise ValueError("Image buffer is not in the correct format")
+        
         # Pass the coordinates to the partial update method
         epd.display_Partial(Xstart, Ystart, Xend, Yend, epd.getbuffer(image))
         print(f"Partial update performed on coordinates: {Xstart}, {Ystart}, {Xend}, {Yend}")
