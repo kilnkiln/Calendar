@@ -75,7 +75,7 @@ def update_eink_display():
         print(f"Error saving image: {e}")
 
     #screenshot.save("calendar_view.png") this one may be redundant
-
+    print(f"Image buffer type: {type(image_buffer)}, length: {len(image_buffer) if hasattr(image_buffer, '__len__') else 'unknown'}")
     # Display the screenshot on the e-ink screen
     try:
         print("Displaying screenshot on e-ink screen...")
@@ -85,7 +85,7 @@ def update_eink_display():
         epd.sleep()
     except Exception as e:
         print(f"Error displaying image on e-paper: {e}")
-        print(f"Image buffer type: {type(image_buffer)}, length: {len(image_buffer) if hasattr(image_buffer, '__len__') else 'unknown'}")
+        
     
 def update_eink_display_partial(x0, y0, x1, y1):
     """Partial refresh of a specific area on the e-paper display."""
