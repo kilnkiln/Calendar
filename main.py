@@ -86,7 +86,7 @@ def update_eink_display():
     except Exception as e:
         print(f"Error displaying image on e-paper: {e}")
     
-def update_eink_display_partial(x0, y0, x1, y1):
+def update_eink_display_partial():
     """Partial refresh of a specific area on the e-paper display."""
     global root  # Access the global root window
     epd = epd13in3k.EPD()
