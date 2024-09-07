@@ -90,7 +90,7 @@ def update_eink_display_partial(x0, y0, x1, y1):
     """Partial refresh of a specific area on the e-paper display."""
     global root  # Access the global root window
     epd = epd13in3k.EPD()
-    epd.init_Part()  # Initialize the e-paper display
+    epd.init()  # Initialize the e-paper display
 
     # Save the screenshot of the partial area that has changed
     image_directory = '/home/admin/CalendarDatabase'
