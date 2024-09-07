@@ -130,7 +130,7 @@ def display_calendar(year):
     calendar_matrix = generate_calendar_matrix(year)
     
     # Define column width
-    day_width = 30
+    day_width = 25
 
     # Define the labels for the days of the week
     weekday_abbr = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
@@ -139,13 +139,17 @@ def display_calendar(year):
     num_columns = len(weekday_abbr) + 31  # 7 for weekdays, 31 for max days in a month
 
     # Display the year as a centered header
-    header = tk.Label(frame, text=str(year), font=('Arial', 16), anchor='center', bg='white')
+    header_font_size = 14
+    header = tk.Label(frame, text=str(year), font=('Arial', header_font_size), anchor='center', bg='white')
     header.grid(row=0, column=0, columnspan=num_columns, pady=10)
 
     # Display the weekdays as the top row, repeating them for a full width
+    day_label_font_size = 10
     for i in range(1, 37):  # Columns 1 to 31 for days of the month
-        day_label = tk.Label(frame, text=weekday_abbr[(i - 1) % 7], font=('Arial', 10, 'bold'), bg='white')
-        day_label.grid(row=1, column=i, padx=2, pady=2, sticky='nsew')
+        day_label = tk.Label(frame, text=weekday_abbr[(i - 1) % 7], font=('Arial', day_label_font_size, 'bold'), bg='white')
+        day_label.grid(row=1, column=i, padx=1, pady=1, sticky='nsew')
+
+   
 
     # Get the current date
     current_date = datetime.now()
