@@ -66,7 +66,7 @@ def update_eink_display():
     # Save the screenshot of the window
     screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
     image_directory = '/home/admin/CalendarDatabase'
-    image_path = os.path.join(image_directory, 'calendar_view.png')
+    image_path = os.path.join(image_directory, 'calendar_view.bmp')
     try:
         print("Capturing screenshot...")
         screenshot.save(image_path)
@@ -97,7 +97,7 @@ def update_eink_display_partial(x0, y0, x1, y1):
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
-    image_path = os.path.join(image_directory, 'calendar_view.png')
+    image_path = os.path.join(image_directory, 'calendar_view.bmp')
 
     try:
         # Capture only the area that has changed (partial area)
