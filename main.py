@@ -75,7 +75,7 @@ def update_eink_display():
         print(f"Error saving image: {e}")
 
     #screenshot.save("calendar_view.png") this one may be redundant
-    print(f"Image buffer type: {type(image_buffer)}, length: {len(image_buffer) if hasattr(image_buffer, '__len__') else 'unknown'}")
+    ##print(f"Image buffer type: {type(image_buffer)}, length: {len(image_buffer) if hasattr(image_buffer, '__len__') else 'unknown'}")
     # Display the screenshot on the e-ink screen
     try:
         print("Displaying screenshot on e-ink screen...")
@@ -86,7 +86,57 @@ def update_eink_display():
     except Exception as e:
         print(f"Error displaying image on e-paper: {e}")
         
+def qupdate_eink_display():
+    print("Starting e-ink display update...")
+    epd = epd13in3k.EPD()
+    epd.init()
+    print("E-paper initialized.")
+    epd.Clear()
     
+    # Capture the current calendar window as an image
+    #x0 = root.winfo_rootx()
+    #y0 = root.winfo_rooty()
+    #x1 = x0 + root.winfo_width()
+    #y1 = y0 + root.winfo_height()
+
+    window_x = root.winfo_rootx()
+    window_y = root.winfo_rooty()
+    window_width = root.winfo_width()
+    window_height = root.winfo_height()
+
+    # Define the target screenshot size
+    target_width = 960
+    target_height = 680
+
+    # Calculate the coordinates to capture a 960x680 area centered in the window
+    x0 = window_x + (window_width - target_width) // 2
+    y0 = window_y + (window_height - target_height) // 2
+    x1 = x0 + target_width
+    y1 = y0 + target_height
+
+    # Save the screenshot of the window
+    screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
+    image_directory = '/home/admin/CalendarDatabase'
+    image_path = os.path.join(image_directory, 'calendar_view.bmp')
+    try:
+        print("Capturing screenshot...")
+        screenshot.save(image_path)
+        print(f"Screenshot saved to {image_path}")
+    except Exception as e:
+        print(f"Error saving image: {e}")
+
+    #screenshot.save("calendar_view.png") this one may be redundant
+    ##print(f"Image buffer type: {type(image_buffer)}, length: {len(image_buffer) if hasattr(image_buffer, '__len__') else 'unknown'}")
+    # Display the screenshot on the e-ink screen
+    try:
+        print("Displaying screenshot on e-ink screen...")
+        image = Image.open(image_path)
+        epd.display(epd.getbuffer(image))
+        print("Image displayed successfully.")
+        epd.sleep()
+    except Exception as e:
+        print(f"Error displaying image on e-paper: {e}")
+            
 def update_eink_display_partial(x0, y0, x1, y1):
     """Partial refresh of a specific area on the e-paper display."""
     global root  # Access the global root window
@@ -296,14 +346,14 @@ def display_calendar(year):
         # Draw the ring after moving
         draw_selection_ring()
         # Get the coordinates of the current canvas
-        canvas = day_canvases[(current_month_index, current_day_index)]
-        canvas_x = root.winfo_rootx() + canvas.winfo_x()
-        canvas_y = root.winfo_rooty() + canvas.winfo_y()
-        canvas_x1 = canvas_x + day_width
-        canvas_y1 = canvas_y + day_width
+        ##canvas = day_canvases[(current_month_index, current_day_index)]
+        ##canvas_x = root.winfo_rootx() + canvas.winfo_x()
+        ##canvas_y = root.winfo_rooty() + canvas.winfo_y()
+        ##canvas_x1 = canvas_x + day_width
+        ##canvas_y1 = canvas_y + day_width
 
         # Perform a partial refresh for the changed selection area
-        update_eink_display_partial(canvas_x, canvas_y, canvas_x1, canvas_y1)
+        qupdate_eink_display()
 
         # Reset the timer
         if ring_timer_id is not None:
