@@ -110,7 +110,19 @@ def update_eink_display_partial(x0, y0, x1, y1):
     # Display the partial screenshot on the e-ink screen
     try:
         image = Image.open(image_path)
-        epd.display_Partial(epd.getbuffer(image))  # Use partial update to refresh only this area
+        # Convert the bounding box coordinates to the appropriate range for the e-paper
+        epd_width = epd.width
+        epd_height = epd.height
+
+        # Convert screen coordinates to e-paper display coordinates
+        Xstart = int((x0 / root.winfo_screenwidth()) * epd_width)
+        Ystart = int((y0 / root.winfo_screenheight()) * epd_height)
+        Xend = int((x1 / root.winfo_screenwidth()) * epd_width)
+        Yend = int((y1 / root.winfo_screenheight()) * epd_height)
+
+        # Pass the coordinates to the partial update method
+        epd.display_Partial(Xstart, Ystart, Xend, Yend, epd.getbuffer(image))
+        print(f"Partial update performed on coordinates: {Xstart}, {Ystart}, {Xend}, {Yend}")
         epd.sleep()
     except Exception as e:
         print(f"Error displaying partial image on e-paper: {e}")
