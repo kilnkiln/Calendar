@@ -89,9 +89,9 @@ def update_eink_display():
 def qupdate_eink_display():
     print("Starting e-ink display update...")
     epd = epd13in3k.EPD()
-    epd.init()
+    #epd.init()
     print("E-paper initialized.")
-    epd.Clear()
+    
     
     # Capture the current calendar window as an image
     #x0 = root.winfo_rootx()
