@@ -130,7 +130,7 @@ def display_calendar(year):
     calendar_matrix = generate_calendar_matrix(year)
     
     # Define column width
-    day_width = 1 #20
+    day_width = 20 #20
 
     
 
@@ -286,8 +286,9 @@ def display_calendar(year):
 
     # Add a button to open the plots window
     plots_button = tk.Button(frame, text="Show Plots", command=open_plots)
-    plots_button.grid(row=0, column=num_columns, padx=10, pady=10, sticky='e')
-    
+    plots_button.grid(row=15, column=0, columnspan=38, pady=10, sticky='e')
+    ###plots_button.grid(row=15, column=num_columns, padx=10, pady=10, sticky='e')
+
     # Bind key events
     root.bind('<Right>', move_selection)
     root.bind('<Left>', move_selection)
