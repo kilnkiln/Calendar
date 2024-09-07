@@ -86,7 +86,7 @@ def update_eink_display():
     except Exception as e:
         print(f"Error displaying image on e-paper: {e}")
     
-def update_eink_display_partial():
+def update_eink_display_partial(x0, y0, x1, y1):
     """Partial refresh of a specific area on the e-paper display."""
     global root  # Access the global root window
     epd = epd13in3k.EPD()
@@ -275,6 +275,14 @@ def display_calendar(year):
 
         # Draw the ring after moving
         draw_selection_ring()
+        # Get the coordinates of the current canvas
+        canvas = day_canvases[(current_month_index, current_day_index)]
+        canvas_x = root.winfo_rootx() + canvas.winfo_x()
+        canvas_y = root.winfo_rooty() + canvas.winfo_y()
+        canvas_x1 = canvas_x + day_width
+        canvas_y1 = canvas_y + day_width
+
+        # Perform a partial refresh for the changed selection area
         update_eink_display_partial()
 
         # Reset the timer
