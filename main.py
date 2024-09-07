@@ -431,8 +431,8 @@ def display_calendar(year):
     load_shaded_days()
 
      # After rendering the calendar, call the e-ink update after a small delay
-    root.after(5000, update_eink_display)  # Schedule the e-ink update after 1 second
-
+    root.after(5000, update_eink_display)  # Schedule the e-ink update after 5 seconds
+    root.after(5000, qupdate_eink_display)
     # Run the application
     root.mainloop()
 
