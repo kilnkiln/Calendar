@@ -308,7 +308,7 @@ def display_calendar(year):
                 # Create a canvas for each day to allow for drawing
                 canvas = tk.Canvas(frame, width=day_width, height=day_width, bg='white', highlightthickness=0)
                 canvas.create_text(day_width / 2, day_width / 2, text=str(day).zfill(2), font=('Arial', 10), tags='day')
-                canvas.grid(row=month_index + 2, column=day_index, padx=1, pady=2, sticky='nsew')
+                canvas.grid(row=month_index + 2, column=day_index, padx=0, pady=2, sticky='nsew')
                 
                 # Store the canvas reference for toggling and navigation
                 day_canvases[(month_index, day)] = canvas
