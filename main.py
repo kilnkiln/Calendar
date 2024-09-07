@@ -86,6 +86,35 @@ def update_eink_display():
     except Exception as e:
         print(f"Error displaying image on e-paper: {e}")
     
+def update_eink_display_partial(x0, y0, x1, y1):
+    """Partial refresh of a specific area on the e-paper display."""
+    global root  # Access the global root window
+    epd = epd13in3k.EPD()
+    epd.init()  # Initialize the e-paper display
+
+    # Save the screenshot of the partial area that has changed
+    image_directory = '/home/admin/CalendarDatabase'
+    if not os.path.exists(image_directory):
+        os.makedirs(image_directory)
+
+    image_path = os.path.join(image_directory, 'calendar_view.png')
+
+    try:
+        # Capture only the area that has changed (partial area)
+        screenshot = ImageGrab.grab(bbox=(x0, y0, x1, y1))
+        screenshot.save(image_path)
+        print(f"Partial screenshot saved to {image_path}")
+    except Exception as e:
+        print(f"Error saving partial screenshot: {e}")
+
+    # Display the partial screenshot on the e-ink screen
+    try:
+        image = Image.open(image_path)
+        epd.display_partial(epd.getbuffer(image))  # Use partial update to refresh only this area
+        epd.sleep()
+    except Exception as e:
+        print(f"Error displaying partial image on e-paper: {e}")
+
 def display_calendar(year):
     # Directory for saving calendar data
     global root
@@ -246,6 +275,7 @@ def display_calendar(year):
 
         # Draw the ring after moving
         draw_selection_ring()
+        update_eink_display_partial()
 
         # Reset the timer
         if ring_timer_id is not None:
