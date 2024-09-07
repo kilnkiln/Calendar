@@ -133,7 +133,7 @@ def display_calendar(year):
     day_width = 20
 
     # Add an extra empty column to shift the calendar to the right
-    extra_padding_column = 2  # Number of empty columns to add on the left side
+    extra_padding_column = 5  # Number of empty columns to add on the left side
 
     # Define the labels for the days of the week
     weekday_abbr = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
