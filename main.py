@@ -283,7 +283,7 @@ def display_calendar(year):
         canvas_y1 = canvas_y + day_width
 
         # Perform a partial refresh for the changed selection area
-        update_eink_display_partial()
+        update_eink_display_partial(canvas_x, canvas_y, canvas_x1, canvas_y1)
 
         # Reset the timer
         if ring_timer_id is not None:
