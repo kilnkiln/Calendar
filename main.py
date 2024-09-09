@@ -38,6 +38,9 @@ def render_calendar(year, highlighted_day=None):
         day_x = padding + i * (day_width + padding)
         draw.text((day_x, weekday_y), day, font=font_small, fill=0)
 
+    # Increase the spacing before the first month's row
+    first_month_y = weekday_y + day_height + 20  # Add extra space after the weekday row
+
     # Get the current date
     current_date = datetime.now()
 
@@ -45,8 +48,8 @@ def render_calendar(year, highlighted_day=None):
     for month in range(1, 13):
         month_name = calendar.month_name[month]
 
-        # Set the y-position for each month's row
-        month_y = weekday_y + (month - 1) * (day_height + padding + 30)
+        # Set the y-position for each month's row, increasing spacing between the rows
+        month_y = first_month_y + (month - 1) * (day_height + padding + 30)
 
         # Draw the month name at the start of the row
         draw.text((padding, month_y), month_name, font=font_small, fill=0)
