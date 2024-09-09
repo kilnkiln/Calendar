@@ -9,7 +9,7 @@ import time
 def initialize_epaper():
     try:
         epd = epd13in3k.EPD()
-        epd.init()
+        epd.init()  # Full initialization for the first display
         return epd
     except Exception as e:
         print(f"Error initializing e-paper display: {e}")
@@ -104,15 +104,19 @@ def render_calendar(year, selected_day=None):
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
         # Perform a full refresh for the initial calendar display
-        epd.display(epd.getbuffer(image))
+        epd.display(epd.getbuffer(image))  # Full refresh
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
 # Function to perform a partial refresh when moving the selection circle
 def refresh_partial(x_start, y_start, x_end, y_end):
     try:
-        # Get the partial area to refresh and perform the partial update
-        epd.displayPartial(epd.getbuffer(image), x_start, y_start, x_end, y_end)
+        # Initialize the partial update mode
+        epd.init_Part()
+
+        # Perform a partial update (assumes x, y start/end coordinates are calculated correctly)
+        epd.display_Partial(epd.getbuffer(image), x_start, y_start, x_end, y_end)
+
     except Exception as e:
         print(f"Error with partial refresh: {e}")
 
