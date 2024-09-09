@@ -124,7 +124,11 @@ def shade_day():
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
-root.withdraw()  # Hide the main window
+
+# Keep the window open but minimized (not visible to the user)
+root.geometry("1x1")  # Make the window very small
+root.attributes("-alpha", 0)  # Make the window fully transparent
+root.resizable(False, False)  # Disable resizing
 
 # Bind keys to the movement and shading functions
 root.bind('<Right>', lambda event: move_selection("right"))
