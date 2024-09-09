@@ -111,13 +111,18 @@ def render_calendar(year, selected_day=None):
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
+# Initialize the partial refresh mode only once
+def init_partial_mode():
+    try:
+        epd.init_Part()
+        print("Partial refresh mode initialized")
+    except Exception as e:
+        print(f"Error initializing partial mode: {e}")
+
 # Function to perform a partial refresh when moving the selection circle
 def refresh_partial(x_start, y_start, x_end, y_end):
     global global_image
     try:
-        # Initialize the partial update mode
-        epd.init_Part()
-
         # Validate the coordinates to ensure they're within bounds
         if x_start < 0 or y_start < 0 or x_end > epd.width or y_end > epd.height:
             print(f"Invalid partial refresh coordinates: {x_start}, {y_start}, {x_end}, {y_end}")
@@ -152,6 +157,7 @@ def move_selection(direction):
     x_end = x_start + 40
     y_end = y_start + 40
 
+    print(f"Partial refresh area: {x_start}, {y_start}, {x_end}, {y_end}")
     # Perform partial refresh
     refresh_partial(x_start, y_start, x_end, y_end)
 
@@ -170,6 +176,7 @@ def shade_day():
     x_end = x_start + 40
     y_end = y_start + 40
 
+    print(f"Partial refresh area (shade): {x_start}, {y_start}, {x_end}, {y_end}")
     # Perform partial refresh
     refresh_partial(x_start, y_start, x_end, y_end)
 
@@ -180,6 +187,9 @@ root = tk.Tk()
 root.geometry("400x200")  # Increase the window size for visibility
 root.title("Calendar Controller")  # Set a title for the window
 root.resizable(False, False)  # Disable resizing
+
+# Initialize the partial mode once
+init_partial_mode()
 
 # Bind keys to the movement and shading functions
 root.bind('<Right>', lambda event: move_selection("right"))  # Right arrow to move selection
