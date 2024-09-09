@@ -62,8 +62,9 @@ def render_calendar(year, highlighted_day=None):
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
 
-        # Adjust the Y position of the month label to align it with the days
-        month_label_y = month_y - (day_height // 2)  # Move the month label down slightly
+        # Further adjust the Y position of the month label to align it better with the days
+        month_label_y = month_y + (day_height // 4)  # Lower the month label more to align with the days
+
         # Draw the shortened month name at the start of the row (left side)
         draw.text((padding, month_label_y), month_name, font=font_small, fill=0)
 
