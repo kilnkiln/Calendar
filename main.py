@@ -19,7 +19,7 @@ current_date = datetime.now()
 current_month_index = current_date.month - 1
 current_day_index = current_date.day - 1  # Zero-based index for days
 
-# Function to render the calendar
+# Function to render the calendar and refresh the e-paper display
 def render_calendar(year, selected_day=None):
     global current_month_index, current_day_index
 
@@ -88,7 +88,7 @@ def render_calendar(year, selected_day=None):
             # Draw the day number with a leading zero
             draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
-    # Send the image to the e-paper display for a full refresh
+    # Send the image to the e-paper display for a full refresh every time the calendar is updated
     epd.display(epd.getbuffer(image))
     epd.sleep()
 
@@ -109,7 +109,7 @@ def move_selection(direction):
             current_month_index = (current_month_index - 1) % 12
             current_day_index = calendar.monthrange(current_date.year, current_month_index + 1)[1] - 1
 
-    render_calendar(current_date.year)
+    render_calendar(current_date.year)  # Refresh the display after movement
 
 # Function to shade a day
 def shade_day():
@@ -120,7 +120,7 @@ def shade_day():
     else:
         shaded_days.add(current_day)
 
-    render_calendar(current_date.year)
+    render_calendar(current_date.year)  # Refresh the display after shading
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
