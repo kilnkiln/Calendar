@@ -10,8 +10,18 @@ epd.init()
 # Define the weekdays row
 weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
+# Create a set to store shaded days
+shaded_days = set()
+
+# Initialize the current selected day (for arrow key navigation)
+current_date = datetime.now()
+current_month_index = current_date.month - 1
+current_day_index = current_date.day - 1  # Zero-based index for days
+
 # Function to render the calendar
-def render_calendar(year, highlighted_day=None):
+def render_calendar(year, selected_day=None):
+    global current_month_index, current_day_index
+
     # Create a blank image (1-bit, black-and-white)
     epd_width = epd.width
     epd_height = epd.height
@@ -28,12 +38,9 @@ def render_calendar(year, highlighted_day=None):
     draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
 
     # Define dimensions for each day box
-    day_width = 20  # Adjust this value as needed to fit everything on screen
+    day_width = 20
     day_height = 30
     padding = 5
-
-    # Get the current date
-    current_date = datetime.now()
 
     # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
     january_start_day, _ = calendar.monthrange(year, 1)
@@ -44,52 +51,79 @@ def render_calendar(year, highlighted_day=None):
     # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
     weekday_y = 50  # Vertical position for the weekday header row
     for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
-        # Shift the weekday row to align with January 1st
         day_x = start_x + i * (day_width + padding)
-        weekday_index = (january_start_day + i) % 7  # Shift starting point by January 1st's weekday
+        weekday_index = (january_start_day + i) % 7
         draw.text((day_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
     # Start drawing months and days staggered according to the start day of the month
-    first_month_y = weekday_y + day_height + 15  # Adjusted spacing between weekday header and first month
+    first_month_y = weekday_y + day_height + 15
 
     for month in range(1, 13):
-        # Shorten the month name to the first three letters
         month_name = calendar.month_name[month][:3]
 
-        # Set the y-position for each month's row, reducing vertical spacing
-        month_y = first_month_y + (month - 1) * (day_height + padding + 15)  # Adjusted vertical spacing
-
-        # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
+        # Set the y-position for each month's row
+        month_y = first_month_y + (month - 1) * (day_height + padding + 15)
         start_day, num_days = calendar.monthrange(year, month)
 
-        # Further adjust the Y position of the month label to align it better with the days
-        month_label_y = month_y + (day_height // 4)  # Lower the month label more to align with the days
-
         # Draw the shortened month name at the start of the row (left side)
-        draw.text((padding, month_label_y), month_name, font=font_small, fill=0)
+        draw.text((padding, month_y + (day_height // 4)), month_name, font=font_small, fill=0)
 
-        # Draw days of the month in a single row, staggered based on the starting day of the week
+        # Draw days of the month in a single row
         for day in range(1, num_days + 1):
-            # Calculate the X position by offsetting the start day
             day_x = start_x + (start_day + day - 1) * (day_width + padding)
-            day_y = month_y  # Keep the Y position in a single row per month
+            day_y = month_y
 
-            # Center the day numbers under the weekday label by adjusting the X position
-            text_x = day_x + (day_width // 2) - 5  # Center the day numbers
-            text_y = day_y + (day_height // 2) - 8  # Adjust to vertically center the text
+            text_x = day_x + (day_width // 2) - 5
+            text_y = day_y + (day_height // 2) - 8
 
-            # Underline the current day instead of drawing a rectangle
-            if month == current_date.month and day == current_date.day:
-                # Draw a line under the current day
-                draw.line([day_x, day_y + day_height - 2, day_x + day_width, day_y + day_height - 2], fill=0, width=2)
+            # Draw the selection circle if the day is selected
+            if month - 1 == current_month_index and day - 1 == current_day_index:
+                draw.ellipse([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
 
-            # Display the day with a leading zero, centered
+            # Draw a shaded circle if the day is shaded
+            if (month, day) in shaded_days:
+                draw.ellipse([day_x + 3, day_y + 3, day_x + day_width - 3, day_y + day_height - 3], fill=0)
+
+            # Draw the day number with a leading zero
             draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
     # Send the image to the e-paper display for a full refresh
     epd.display(epd.getbuffer(image))
     epd.sleep()
 
+# Function to move the selection circle with arrow keys
+def move_selection(direction):
+    global current_day_index, current_month_index
+
+    if direction == "right":
+        current_day_index += 1
+        # Handle end of month and move to the next month
+        if current_day_index >= calendar.monthrange(current_date.year, current_month_index + 1)[1]:
+            current_day_index = 0
+            current_month_index = (current_month_index + 1) % 12
+    elif direction == "left":
+        current_day_index -= 1
+        # Handle start of month and move to the previous month
+        if current_day_index < 0:
+            current_month_index = (current_month_index - 1) % 12
+            current_day_index = calendar.monthrange(current_date.year, current_month_index + 1)[1] - 1
+
+    render_calendar(current_date.year)
+
+# Function to shade a day
+def shade_day():
+    global shaded_days
+    current_day = (current_month_index + 1, current_day_index + 1)
+    if current_day in shaded_days:
+        shaded_days.remove(current_day)
+    else:
+        shaded_days.add(current_day)
+
+    render_calendar(current_date.year)
+
 # Example usage:
-current_year = datetime.now().year
-render_calendar(current_year)
+render_calendar(current_date.year)
+
+# Simulate some user input
+# move_selection("right")  # To move the selection circle to the right
+# shade_day()  # To shade the currently selected day
