@@ -56,7 +56,7 @@ def render_calendar(year, highlighted_day=None):
         month_name = calendar.month_name[month]
 
         # Set the y-position for each month's row, reducing vertical spacing
-        month_y = first_month_y + (month - 1) * (day_height + padding + 30)  # Adjusted vertical spacing
+        month_y = first_month_y + (month - 1) * (day_height + padding + 15)  # Adjusted vertical spacing
 
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
