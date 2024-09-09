@@ -6,7 +6,6 @@ from datetime import datetime
 # Initialize the e-paper display
 epd = epd13in3k.EPD()
 epd.init()
-#note
 
 # Define the weekdays row
 weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -45,19 +44,20 @@ def render_calendar(year, highlighted_day=None):
     # Start drawing months and days staggered according to the start day of the month
     for month in range(1, 13):
         month_name = calendar.month_name[month]
-        month_x = padding  # X position where the month starts
-        month_y = weekday_y + (month) * (day_height + padding + 20)  # Adjust Y position for each month
+
+        # Set the y-position for each month's row
+        month_y = weekday_y + (month - 1) * (day_height + padding + 30)
 
         # Draw the month name at the start of the row
-        draw.text((month_x, month_y), month_name, font=font_small, fill=0)
+        draw.text((padding, month_y), month_name, font=font_small, fill=0)
 
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
 
-        # Draw days of the month staggered based on the starting day of the week
+        # Draw days of the month in a single row, staggered based on the starting day of the week
         for day in range(1, num_days + 1):
             # Calculate the X position by offsetting the start day
-            day_x = padding + (start_day + day - 1) % 7 * (day_width + padding)
+            day_x = padding + 100 + (start_day + day - 1) * (day_width + padding)
             day_y = month_y  # Keep the Y position in a single row per month
 
             # Highlight the current day with a rectangle if needed
