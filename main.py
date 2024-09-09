@@ -50,7 +50,7 @@ def render_calendar(year, highlighted_day=None):
         draw.text((day_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
     # Start drawing months and days staggered according to the start day of the month
-    first_month_y = weekday_y + day_height + 10  # Reduced spacing between weekday header and first month
+    first_month_y = weekday_y + day_height + 15  # Adjusted spacing between weekday header and first month
 
     for month in range(1, 13):
         # Shorten the month name to the first three letters
@@ -62,14 +62,20 @@ def render_calendar(year, highlighted_day=None):
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
 
+        # Adjust the Y position of the month label to align it with the days
+        month_label_y = month_y - (day_height // 2)  # Move the month label down slightly
         # Draw the shortened month name at the start of the row (left side)
-        draw.text((padding, month_y), month_name, font=font_small, fill=0)
+        draw.text((padding, month_label_y), month_name, font=font_small, fill=0)
 
         # Draw days of the month in a single row, staggered based on the starting day of the week
         for day in range(1, num_days + 1):
             # Calculate the X position by offsetting the start day
             day_x = start_x + (start_day + day - 1) * (day_width + padding)
             day_y = month_y  # Keep the Y position in a single row per month
+
+            # Center the day numbers under the weekday label by adjusting the X position
+            text_x = day_x + (day_width // 2) - 5  # Center the day numbers
+            text_y = day_y + (day_height // 2) - 8  # Adjust to vertically center the text
 
             # Highlight the current day with a rectangle if needed
             if month == current_date.month and day == current_date.day:
@@ -78,12 +84,12 @@ def render_calendar(year, highlighted_day=None):
             # Highlight the user-selected day if provided
             if highlighted_day and highlighted_day == (month, day):
                 draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
-                # Display the day with a leading zero
-                draw.text((day_x + 5, day_y + 5), str(day).zfill(2), font=font_small, fill=0)
+                # Display the day with a leading zero, centered
+                draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
             else:
                 draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0)
-                # Display the day with a leading zero
-                draw.text((day_x + 5, day_y + 5), str(day).zfill(2), font=font_small, fill=0)
+                # Display the day with a leading zero, centered
+                draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
     # Send the image to the e-paper display for a full refresh
     epd.display(epd.getbuffer(image))
