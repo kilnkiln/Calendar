@@ -111,7 +111,7 @@ def render_calendar(year, selected_day=None):
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
-# Initialize the partial refresh mode only once
+# Initialize partial mode (called once)
 def init_partial_mode():
     try:
         epd.init_Part()
@@ -119,18 +119,13 @@ def init_partial_mode():
     except Exception as e:
         print(f"Error initializing partial mode: {e}")
 
-# Function to perform a partial refresh when moving the selection circle
+# Function to perform a partial refresh
 def refresh_partial(x_start, y_start, x_end, y_end):
     global global_image
     try:
-        # Validate the coordinates to ensure they're within bounds
-        if x_start < 0 or y_start < 0 or x_end > epd.width or y_end > epd.height:
-            print(f"Invalid partial refresh coordinates: {x_start}, {y_start}, {x_end}, {y_end}")
-            return
-
         # Perform a partial update
         epd.display_Partial(epd.getbuffer(global_image), x_start, y_start, x_end, y_end)
-
+        print(f"Partial refresh: ({x_start}, {y_start}) to ({x_end}, {y_end})")
     except Exception as e:
         print(f"Error with partial refresh: {e}")
 
@@ -157,7 +152,6 @@ def move_selection(direction):
     x_end = x_start + 40
     y_end = y_start + 40
 
-    print(f"Partial refresh area: {x_start}, {y_start}, {x_end}, {y_end}")
     # Perform partial refresh
     refresh_partial(x_start, y_start, x_end, y_end)
 
@@ -176,7 +170,6 @@ def shade_day():
     x_end = x_start + 40
     y_end = y_start + 40
 
-    print(f"Partial refresh area (shade): {x_start}, {y_start}, {x_end}, {y_end}")
     # Perform partial refresh
     refresh_partial(x_start, y_start, x_end, y_end)
 
