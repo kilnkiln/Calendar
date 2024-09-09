@@ -109,7 +109,7 @@ def render_calendar(year, selected_day=None):
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
-# Function to move the selection circle with arrow keys
+# Function to move the selection circle with arrow keys (no shading)
 def move_selection(direction):
     global current_day_index, current_month_index
 
@@ -128,7 +128,7 @@ def move_selection(direction):
 
     render_calendar(current_date.year)  # Refresh the display after movement
 
-# Function to shade a day
+# Function to shade/unshade a day (on spacebar press)
 def shade_day():
     global shaded_days
     current_day = (current_month_index + 1, current_day_index + 1)
@@ -148,9 +148,9 @@ root.title("Calendar Controller")  # Set a title for the window
 root.resizable(False, False)  # Disable resizing
 
 # Bind keys to the movement and shading functions
-root.bind('<Right>', lambda event: move_selection("right"))
-root.bind('<Left>', lambda event: move_selection("left"))
-root.bind('<space>', lambda event: shade_day())
+root.bind('<Right>', lambda event: move_selection("right"))  # Right arrow to move selection
+root.bind('<Left>', lambda event: move_selection("left"))  # Left arrow to move selection
+root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 
 # Start the Tkinter event loop to listen for key events
 render_calendar(current_date.year)
