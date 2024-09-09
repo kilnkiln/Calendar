@@ -50,13 +50,13 @@ def render_calendar(year, highlighted_day=None):
         draw.text((day_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
     # Start drawing months and days staggered according to the start day of the month
-    first_month_y = weekday_y + day_height + 20  # Starting Y position for the first month
+    first_month_y = weekday_y + day_height + 10  # Reduced spacing between weekday header and first month
 
     for month in range(1, 13):
         month_name = calendar.month_name[month]
 
-        # Set the y-position for each month's row, increasing spacing between the rows
-        month_y = first_month_y + (month - 1) * (day_height + padding + 50)
+        # Set the y-position for each month's row, reducing vertical spacing
+        month_y = first_month_y + (month - 1) * (day_height + padding + 30)  # Adjusted vertical spacing
 
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
