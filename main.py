@@ -32,35 +32,34 @@ def render_calendar(year, highlighted_day=None):
     day_height = 30
     padding = 5
 
-    # Draw the weekday row at the top (repeating M, T, W, T, F, S, S)
-    weekday_y = 50  # Vertical position for the weekday header row
-    for i, day in enumerate(weekdays):
-        day_x = padding + i * (day_width + padding)
-        draw.text((day_x, weekday_y), day, font=font_small, fill=0)
-
-    # Increase the spacing before the first month's row
-    first_month_y = weekday_y + day_height + 20  # Add extra space after the weekday row
-
     # Get the current date
     current_date = datetime.now()
 
     # Start drawing months and days staggered according to the start day of the month
+    first_month_y = 70  # Starting Y position for the first month
+
     for month in range(1, 13):
         month_name = calendar.month_name[month]
 
         # Set the y-position for each month's row, increasing spacing between the rows
         month_y = first_month_y + (month - 1) * (day_height + padding + 30)
 
-        # Draw the month name at the start of the row
-        draw.text((padding, month_y), month_name, font=font_small, fill=0)
-
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
+
+        # Draw the weekday row above the days for each month
+        for i, day in enumerate(weekdays):
+            day_x = padding + 100 + i * (day_width + padding)  # Align the weekday headers with the days
+            weekday_y = month_y - (day_height + padding)  # Place weekday row above the days
+            draw.text((day_x, weekday_y), day, font=font_small, fill=0)
+
+        # Draw the month name at the start of the row (left side)
+        draw.text((padding, month_y), month_name, font=font_small, fill=0)
 
         # Draw days of the month in a single row, staggered based on the starting day of the week
         for day in range(1, num_days + 1):
             # Calculate the X position by offsetting the start day
-            day_x = padding + 100 + (start_day + day - 1) * (day_width + padding)
+            day_x = padding + 100 + (start_day + day - 1) % 7 * (day_width + padding)
             day_y = month_y  # Keep the Y position in a single row per month
 
             # Highlight the current day with a rectangle if needed
