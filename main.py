@@ -38,8 +38,8 @@ def render_calendar(year, highlighted_day=None):
     # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
     january_start_day, _ = calendar.monthrange(year, 1)
 
-    # Define the starting X position for the weekday row and days (reduced gap between month label and days)
-    start_x = padding + 60  # Reduced spacing between month label and day start
+    # Define the starting X position for the weekday row and days (adjusted for shortened month names)
+    start_x = padding + 80  # Adjusted to allow more space for days after shortened month names
 
     # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
     weekday_y = 50  # Vertical position for the weekday header row
@@ -53,7 +53,8 @@ def render_calendar(year, highlighted_day=None):
     first_month_y = weekday_y + day_height + 10  # Reduced spacing between weekday header and first month
 
     for month in range(1, 13):
-        month_name = calendar.month_name[month]
+        # Shorten the month name to the first three letters
+        month_name = calendar.month_name[month][:3]
 
         # Set the y-position for each month's row, reducing vertical spacing
         month_y = first_month_y + (month - 1) * (day_height + padding + 15)  # Adjusted vertical spacing
@@ -61,7 +62,7 @@ def render_calendar(year, highlighted_day=None):
         # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
 
-        # Draw the month name at the start of the row (left side)
+        # Draw the shortened month name at the start of the row (left side)
         draw.text((padding, month_y), month_name, font=font_small, fill=0)
 
         # Draw days of the month in a single row, staggered based on the starting day of the week
