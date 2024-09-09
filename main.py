@@ -56,12 +56,11 @@ def render_calendar(year, highlighted_day=None):
             weekday_y = month_y - (day_height + padding)  # Place weekday row above the days
             draw.text((day_x, weekday_y), day, font=font_small, fill=0)
 
-        # Draw days of the month, wrapping after each week (7 days)
+        # Draw days of the month in a single row, without wrapping
         for day in range(1, num_days + 1):
             # Calculate the X position by offsetting the start day
-            day_x = padding + 100 + ((start_day + day - 1) % 7) * (day_width + padding)
-            # Calculate the Y position by incrementing after each full week
-            day_y = month_y + ((start_day + day - 1) // 7) * (day_height + padding)
+            day_x = padding + 100 + (start_day + day - 1) * (day_width + padding)
+            day_y = month_y  # Keep the Y position in a single row per month
 
             # Highlight the current day with a rectangle if needed
             if month == current_date.month and day == current_date.day:
