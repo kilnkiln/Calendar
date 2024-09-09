@@ -35,8 +35,14 @@ def render_calendar(year, highlighted_day=None):
     # Get the current date
     current_date = datetime.now()
 
+    # Draw a single continuous row for the weekdays at the top
+    weekday_y = 50  # Vertical position for the weekday header row
+    for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
+        day_x = padding + i * (day_width + padding)
+        draw.text((day_x, weekday_y), weekdays[i % 7], font=font_small, fill=0)
+
     # Start drawing months and days staggered according to the start day of the month
-    first_month_y = 70  # Starting Y position for the first month
+    first_month_y = weekday_y + day_height + 20  # Starting Y position for the first month
 
     for month in range(1, 13):
         month_name = calendar.month_name[month]
@@ -50,13 +56,7 @@ def render_calendar(year, highlighted_day=None):
         # Draw the month name at the start of the row (left side)
         draw.text((padding, month_y), month_name, font=font_small, fill=0)
 
-        # Draw the weekday row above the days for each month
-        for i, day in enumerate(weekdays):
-            day_x = padding + 100 + i * (day_width + padding)  # Align the weekday headers with the days
-            weekday_y = month_y - (day_height + padding)  # Place weekday row above the days
-            draw.text((day_x, weekday_y), day, font=font_small, fill=0)
-
-        # Draw days of the month in a single row, without wrapping
+        # Draw days of the month in a single row, staggered based on the starting day of the week
         for day in range(1, num_days + 1):
             # Calculate the X position by offsetting the start day
             day_x = padding + 100 + (start_day + day - 1) * (day_width + padding)
