@@ -15,6 +15,7 @@ def initialize_epaper():
         print(f"Error initializing e-paper display: {e}")
         return None
 
+# Make sure we initialize once and use the same object
 epd = initialize_epaper()
 
 # Define the weekdays row
@@ -104,7 +105,7 @@ def render_calendar(year, selected_day=None):
 
         # Send the image to the e-paper display for a full refresh every time the calendar is updated
         epd.display(epd.getbuffer(image))
-        epd.sleep()
+        time.sleep(1)  # Ensure there's enough delay after updating
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
