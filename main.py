@@ -118,6 +118,11 @@ def refresh_partial(x_start, y_start, x_end, y_end):
         # Initialize the partial update mode
         epd.init_Part()
 
+        # Validate the coordinates to ensure they're within bounds
+        if x_start < 0 or y_start < 0 or x_end > epd.width or y_end > epd.height:
+            print(f"Invalid partial refresh coordinates: {x_start}, {y_start}, {x_end}, {y_end}")
+            return
+
         # Perform a partial update
         epd.display_Partial(epd.getbuffer(global_image), x_start, y_start, x_end, y_end)
 
