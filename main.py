@@ -18,6 +18,9 @@ def initialize_epaper():
 # Make sure we initialize once and use the same object
 epd = initialize_epaper()
 
+# Global image object to store the entire calendar image
+global_image = None
+
 # Define the weekdays row
 weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -31,7 +34,7 @@ current_day_index = current_date.day - 1  # Zero-based index for days
 
 # Function to render the full calendar and perform a full refresh
 def render_calendar(year, selected_day=None):
-    global current_month_index, current_day_index
+    global current_month_index, current_day_index, global_image
 
     if epd is None:
         print("E-paper display not initialized properly.")
@@ -41,10 +44,10 @@ def render_calendar(year, selected_day=None):
         # Create a blank image (1-bit, black-and-white)
         epd_width = epd.width
         epd_height = epd.height
-        image = Image.new('1', (epd_width, epd_height), 255)  # 255 means white background
+        global_image = Image.new('1', (epd_width, epd_height), 255)  # 255 means white background
 
         # Create a drawing object to draw on the image
-        draw = ImageDraw.Draw(image)
+        draw = ImageDraw.Draw(global_image)
 
         # Define fonts (adjust paths if needed)
         font_large = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 24)
@@ -104,18 +107,19 @@ def render_calendar(year, selected_day=None):
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
         # Perform a full refresh for the initial calendar display
-        epd.display(epd.getbuffer(image))  # Full refresh
+        epd.display(epd.getbuffer(global_image))  # Full refresh
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
 # Function to perform a partial refresh when moving the selection circle
 def refresh_partial(x_start, y_start, x_end, y_end):
+    global global_image
     try:
         # Initialize the partial update mode
         epd.init_Part()
 
-        # Perform a partial update (assumes x, y start/end coordinates are calculated correctly)
-        epd.display_Partial(epd.getbuffer(image), x_start, y_start, x_end, y_end)
+        # Perform a partial update
+        epd.display_Partial(epd.getbuffer(global_image), x_start, y_start, x_end, y_end)
 
     except Exception as e:
         print(f"Error with partial refresh: {e}")
