@@ -38,8 +38,8 @@ def render_calendar(year, highlighted_day=None):
     # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
     january_start_day, _ = calendar.monthrange(year, 1)
 
-    # Define the starting X position for the weekday row and days (adjusted for shortened month names)
-    start_x = padding + 30  # Adjusted to allow more space for days after shortened month names
+    # Define the starting X position for the weekday row and days
+    start_x = padding + 30  # Reduced spacing between month label and day start
 
     # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
     weekday_y = 50  # Vertical position for the weekday header row
@@ -78,10 +78,12 @@ def render_calendar(year, highlighted_day=None):
             # Highlight the user-selected day if provided
             if highlighted_day and highlighted_day == (month, day):
                 draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
-                draw.text((day_x + 5, day_y + 5), str(day), font=font_small, fill=0)
+                # Display the day with a leading zero
+                draw.text((day_x + 5, day_y + 5), str(day).zfill(2), font=font_small, fill=0)
             else:
                 draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0)
-                draw.text((day_x + 5, day_y + 5), str(day), font=font_small, fill=0)
+                # Display the day with a leading zero
+                draw.text((day_x + 5, day_y + 5), str(day).zfill(2), font=font_small, fill=0)
 
     # Send the image to the e-paper display for a full refresh
     epd.display(epd.getbuffer(image))
