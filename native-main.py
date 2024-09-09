@@ -7,7 +7,10 @@ from datetime import datetime
 epd = epd13in3k.EPD()
 epd.init()
 
-# Function to render the entire calendar, with each month's days in a single row
+# Define the weekdays row
+weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+
+# Function to render the calendar
 def render_calendar(year, highlighted_day=None):
     # Create a blank image (1-bit, black-and-white)
     epd_width = epd.width
@@ -25,30 +28,36 @@ def render_calendar(year, highlighted_day=None):
     draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
 
     # Define dimensions for each day box
-    day_width = 20  # Smaller width to fit all days in a row
+    day_width = 20  # Adjust this value as needed to fit everything on screen
     day_height = 30
     padding = 5
+
+    # Draw the weekday row at the top (repeating M, T, W, T, F, S, S)
+    weekday_y = 50  # Vertical position for the weekday header row
+    for i, day in enumerate(weekdays):
+        day_x = padding + i * (day_width + padding)
+        draw.text((day_x, weekday_y), day, font=font_small, fill=0)
 
     # Get the current date
     current_date = datetime.now()
 
-    # Start drawing months and days in rows
+    # Start drawing months and days staggered according to the start day of the month
     for month in range(1, 13):
         month_name = calendar.month_name[month]
         month_x = padding  # X position where the month starts
-        month_y = 50 + (month - 1) * (day_height + padding + 30)  # Adjust Y position for each month
+        month_y = weekday_y + (month) * (day_height + padding + 20)  # Adjust Y position for each month
 
         # Draw the month name at the start of the row
         draw.text((month_x, month_y), month_name, font=font_small, fill=0)
 
-        # Get month details: start day and number of days
+        # Get month details: start day (0 = Monday, 6 = Sunday) and number of days
         start_day, num_days = calendar.monthrange(year, month)
 
-        # Draw days of the month in a single row, after the month name
+        # Draw days of the month staggered based on the starting day of the week
         for day in range(1, num_days + 1):
-            # Position the days in a single row, spaced out horizontally
-            day_x = month_x + 100 + (day - 1) * (day_width + padding)
-            day_y = month_y
+            # Calculate the X position by offsetting the start day
+            day_x = padding + (start_day + day - 1) % 7 * (day_width + padding)
+            day_y = month_y  # Keep the Y position in a single row per month
 
             # Highlight the current day with a rectangle if needed
             if month == current_date.month and day == current_date.day:
