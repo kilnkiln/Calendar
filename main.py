@@ -35,11 +35,16 @@ def render_calendar(year, highlighted_day=None):
     # Get the current date
     current_date = datetime.now()
 
-    # Draw a single continuous row for the weekdays at the top
+    # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
+    january_start_day, _ = calendar.monthrange(year, 1)
+
+    # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
     weekday_y = 50  # Vertical position for the weekday header row
     for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
+        # Shift the weekday row to align with January 1st
         day_x = padding + i * (day_width + padding)
-        draw.text((day_x, weekday_y), weekdays[i % 7], font=font_small, fill=0)
+        weekday_index = (january_start_day + i) % 7  # Shift starting point by January 1st's weekday
+        draw.text((day_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
     # Start drawing months and days staggered according to the start day of the month
     first_month_y = weekday_y + day_height + 20  # Starting Y position for the first month
