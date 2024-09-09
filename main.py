@@ -1,3 +1,4 @@
+import tkinter as tk
 from waveshare_epd import epd13in3k
 from PIL import Image, ImageDraw, ImageFont
 import calendar
@@ -121,9 +122,15 @@ def shade_day():
 
     render_calendar(current_date.year)
 
-# Example usage:
-render_calendar(current_date.year)
+# Tkinter Setup for Key Bindings
+root = tk.Tk()
+root.withdraw()  # Hide the main window
 
-# Simulate some user input
-# move_selection("right")  # To move the selection circle to the right
-# shade_day()  # To shade the currently selected day
+# Bind keys to the movement and shading functions
+root.bind('<Right>', lambda event: move_selection("right"))
+root.bind('<Left>', lambda event: move_selection("left"))
+root.bind('<space>', lambda event: shade_day())
+
+# Start the Tkinter event loop to listen for key events
+render_calendar(current_date.year)
+root.mainloop()
