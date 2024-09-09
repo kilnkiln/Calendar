@@ -29,7 +29,7 @@ current_date = datetime.now()
 current_month_index = current_date.month - 1
 current_day_index = current_date.day - 1  # Zero-based index for days
 
-# Function to render the calendar and refresh the e-paper display
+# Function to render the full calendar and perform a full refresh
 def render_calendar(year, selected_day=None):
     global current_month_index, current_day_index
 
@@ -103,13 +103,20 @@ def render_calendar(year, selected_day=None):
                 # Draw the day number with a leading zero
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
-        # Send the image to the e-paper display for a full refresh every time the calendar is updated
+        # Perform a full refresh for the initial calendar display
         epd.display(epd.getbuffer(image))
-        time.sleep(1)  # Ensure there's enough delay after updating
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
-# Function to move the selection circle with arrow keys (no shading)
+# Function to perform a partial refresh when moving the selection circle
+def refresh_partial(x_start, y_start, x_end, y_end):
+    try:
+        # Get the partial area to refresh and perform the partial update
+        epd.displayPartial(epd.getbuffer(image), x_start, y_start, x_end, y_end)
+    except Exception as e:
+        print(f"Error with partial refresh: {e}")
+
+# Function to move the selection circle with arrow keys and perform a partial refresh
 def move_selection(direction):
     global current_day_index, current_month_index
 
@@ -126,9 +133,16 @@ def move_selection(direction):
             current_month_index = (current_month_index - 1) % 12
             current_day_index = calendar.monthrange(current_date.year, current_month_index + 1)[1] - 1
 
-    render_calendar(current_date.year)  # Refresh the display after movement
+    # Calculate the position of the day box for partial refresh
+    x_start = 30 + current_day_index * 25  # Adjust based on position and width
+    y_start = 100  # Adjust based on your layout
+    x_end = x_start + 40
+    y_end = y_start + 40
 
-# Function to shade/unshade a day (on spacebar press)
+    # Perform partial refresh
+    refresh_partial(x_start, y_start, x_end, y_end)
+
+# Function to shade/unshade a day (on spacebar press) and perform partial refresh
 def shade_day():
     global shaded_days
     current_day = (current_month_index + 1, current_day_index + 1)
@@ -137,7 +151,14 @@ def shade_day():
     else:
         shaded_days.add(current_day)
 
-    render_calendar(current_date.year)  # Refresh the display after shading
+    # Calculate the position of the day box for partial refresh
+    x_start = 30 + current_day_index * 25  # Adjust based on position and width
+    y_start = 100  # Adjust based on your layout
+    x_end = x_start + 40
+    y_end = y_start + 40
+
+    # Perform partial refresh
+    refresh_partial(x_start, y_start, x_end, y_end)
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
