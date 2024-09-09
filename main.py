@@ -39,7 +39,7 @@ def render_calendar(year, highlighted_day=None):
     january_start_day, _ = calendar.monthrange(year, 1)
 
     # Define the starting X position for the weekday row and days (adjusted for shortened month names)
-    start_x = padding + 80  # Adjusted to allow more space for days after shortened month names
+    start_x = padding + 30  # Adjusted to allow more space for days after shortened month names
 
     # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
     weekday_y = 50  # Vertical position for the weekday header row
