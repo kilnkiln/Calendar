@@ -78,19 +78,13 @@ def render_calendar(year, highlighted_day=None):
             text_x = day_x + (day_width // 2) - 5  # Center the day numbers
             text_y = day_y + (day_height // 2) - 8  # Adjust to vertically center the text
 
-            # Highlight the current day with a rectangle if needed
+            # Underline the current day instead of drawing a rectangle
             if month == current_date.month and day == current_date.day:
-                draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
+                # Draw a line under the current day
+                draw.line([day_x, day_y + day_height - 2, day_x + day_width, day_y + day_height - 2], fill=0, width=2)
 
-            # Highlight the user-selected day if provided
-            if highlighted_day and highlighted_day == (month, day):
-                draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
-                # Display the day with a leading zero, centered
-                draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
-            else:
-                draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], outline=0)
-                # Display the day with a leading zero, centered
-                draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
+            # Display the day with a leading zero, centered
+            draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
     # Send the image to the e-paper display for a full refresh
     epd.display(epd.getbuffer(image))
