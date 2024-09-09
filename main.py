@@ -6,6 +6,7 @@ from datetime import datetime
 # Initialize the e-paper display
 epd = epd13in3k.EPD()
 epd.init()
+#note
 
 # Define the weekdays row
 weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
