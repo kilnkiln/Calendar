@@ -189,7 +189,7 @@ def move_selection(direction):
     refresh_partial(old_day_x - 10, old_day_y - 10, old_day_x + 30, old_day_y + 30)
     refresh_partial(new_day_x - 10, new_day_y - 10, new_day_x + 30, new_day_y + 30)
 
-# Function to shade/unshade a day (on spacebar press) and perform partial refresh
+# Function to shade/unshade a day (on spacebar press) and perform a partial refresh
 def shade_day():
     global shaded_days
     current_day = (current_month_index + 1, current_day_index + 1)
