@@ -20,12 +20,13 @@ def initialize_epaper():
         print(f"Error initializing e-paper display: {e}")
         return None
 
-# Global variables to store the shaded days, selection ring, and sleep timer
+# Global variables to store the shaded days, selection ring, sleep timer, and sleep state
 shaded_days = set()
 selection_ring_visible = False  # Start with the selection ring hidden
 selection_ring_timer_id = None
 refresh_timer_id = None
 sleep_timer_id = None
+display_asleep = False  # Track if the display is asleep
 
 # Save shaded days to a file
 def save_shaded_days(year):
@@ -61,8 +62,18 @@ def hide_selection_ring():
 
 # Put the e-paper display to sleep after 30 seconds of inactivity
 def sleep_epaper():
+    global display_asleep
     print("E-paper display going to sleep due to inactivity.")
     epd.sleep()
+    display_asleep = True  # Mark the display as asleep
+
+# Wake up the e-paper display if it's asleep
+def wake_up_epaper():
+    global display_asleep
+    if display_asleep:
+        print("Waking up e-paper display...")
+        epd.init()  # Reinitialize the display
+        display_asleep = False
 
 # Reset the timer to hide the selection ring and sleep the display
 def reset_timers():
@@ -81,7 +92,7 @@ def reset_timers():
 # Perform a quick refresh for the calendar display
 def quick_refresh():
     try:
-        epd.init()  # Reinitialize for quick refresh
+        wake_up_epaper()  # Ensure the e-paper is awake before refreshing
         epd.Clear(0xFF)  # Use a faster clear method (may not be available on all models)
         print("Quick refresh mode activated.")
     except Exception as e:
@@ -107,6 +118,8 @@ def render_calendar(year):
         return
 
     try:
+        wake_up_epaper()  # Ensure the display is awake before drawing
+
         # Create a blank image (1-bit, black-and-white)
         epd_width = epd.width
         epd_height = epd.height
