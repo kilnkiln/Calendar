@@ -3,7 +3,6 @@ from waveshare_epd import epd13in3k
 from PIL import Image, ImageDraw, ImageFont
 import calendar
 from datetime import datetime
-import time
 
 # Initialize the e-paper display with a quick refresh mode
 def initialize_epaper():
@@ -17,6 +16,9 @@ def initialize_epaper():
         print(f"Error initializing e-paper display: {e}")
         return None
 
+# Global variable to store the shaded days
+shaded_days = set()
+
 # Perform a quick refresh for the calendar display
 def quick_refresh():
     try:
@@ -26,7 +28,7 @@ def quick_refresh():
     except Exception as e:
         print(f"Error during quick refresh: {e}")
 
-# Main function to render calendar
+# Main function to render the calendar
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
 
@@ -109,7 +111,6 @@ def render_calendar(year):
         print("Quick refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
-
 
 # Initialize the e-paper display
 epd = initialize_epaper()
