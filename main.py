@@ -20,8 +20,11 @@ def initialize_epaper():
         print(f"Error initializing e-paper display: {e}")
         return None
 
-# Global variable to store the shaded days
+# Global variables to store the shaded days and selection ring timer
 shaded_days = set()
+selection_ring_visible = True
+selection_ring_timer_id = None
+refresh_timer_id = None
 
 # Save shaded days to a file
 def save_shaded_days(year):
@@ -49,6 +52,22 @@ def load_shaded_days(year):
         print(f"No file found for {year}. Creating new file...")
         save_shaded_days(year)
 
+# Hide the selection ring after 60 seconds of inactivity
+def hide_selection_ring():
+    global selection_ring_visible
+    selection_ring_visible = False
+    render_calendar(current_year)  # Redraw the calendar without the ring
+
+# Reset the timer to hide the selection ring
+def reset_selection_ring_timer():
+    global selection_ring_timer_id, selection_ring_visible
+
+    if selection_ring_timer_id:
+        root.after_cancel(selection_ring_timer_id)
+
+    selection_ring_visible = True
+    selection_ring_timer_id = root.after(60000, hide_selection_ring)  # 60 seconds
+
 # Perform a quick refresh for the calendar display
 def quick_refresh():
     try:
@@ -58,7 +77,18 @@ def quick_refresh():
     except Exception as e:
         print(f"Error during quick refresh: {e}")
 
-# Draw the selection circle and center the day number
+# Debounce refresh logic
+def debounce_refresh():
+    global refresh_timer_id
+
+    # If there's an existing timer, cancel it
+    if refresh_timer_id:
+        root.after_cancel(refresh_timer_id)
+
+    # Set a new timer to refresh after 1 second
+    refresh_timer_id = root.after(1000, lambda: render_calendar(current_year))
+
+# Main function to render the calendar
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
 
@@ -125,9 +155,17 @@ def render_calendar(year):
                 circle_x = day_x + (20 - circle_diameter) // 2  # Center the circle horizontally
                 circle_y = day_y + (30 - circle_diameter) // 2  # Center the circle vertically
 
-                # Draw the selection circle if the day is selected
-                if month - 1 == current_month_index and day - 1 == current_day_index:
-                    draw.ellipse([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], outline=0, width=2)
+                # Underline the current day
+                if month == current_month_index + 1 and day == current_day_index + 1:
+                    draw.line([day_x, day_y + 35, day_x + 20, day_y + 35], fill=0, width=2)
+
+                # Draw the selection circle if the day is selected and the ring is visible
+                if selection_ring_visible and month - 1 == current_month_index and day - 1 == current_day_index:
+                    ring_padding = 3  # Add padding to make the ring larger than the shaded circle
+                    draw.ellipse([circle_x - ring_padding, circle_y - ring_padding, 
+                                  circle_x + circle_diameter + ring_padding, 
+                                  circle_y + circle_diameter + ring_padding], 
+                                  outline=0, width=2)
 
                 # Draw a shaded circle if the day is shaded
                 if (month, day) in shaded_days:
@@ -154,7 +192,7 @@ current_day_index = current_date.day - 1  # Zero-based index for days
 # Load the shaded days for the current year
 load_shaded_days(current_year)
 
-# Example function to update calendar on arrow key presses with full refresh
+# Example function to update calendar on arrow key presses with debounce
 def move_selection(direction):
     global current_day_index, current_month_index
 
@@ -169,8 +207,11 @@ def move_selection(direction):
             current_month_index = (current_month_index - 1) % 12
             current_day_index = calendar.monthrange(current_year, current_month_index + 1)[1] - 1
 
-    # Redraw the entire calendar with the updated selection
-    render_calendar(current_year)
+    # Reset the timer to hide the selection ring
+    reset_selection_ring_timer()
+
+    # Debounce the refresh (wait 1 second before refreshing)
+    debounce_refresh()
 
 # Example function to shade/unshade a day and refresh the display
 def shade_day():
@@ -186,8 +227,11 @@ def shade_day():
     # Save the shaded days after any change
     save_shaded_days(current_year)
 
-    # Redraw the entire calendar with updated shading
-    render_calendar(current_year)
+    # Reset the timer to hide the selection ring
+    reset_selection_ring_timer()
+
+    # Debounce the refresh (wait 1 second before refreshing)
+    debounce_refresh()
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
@@ -206,4 +250,9 @@ root.bind('<Left>', lambda event: move_selection("left"))
 root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 
 # Start the Tkinter event loop
+reset_selection_ring_timer()  # Start the selection ring timer
 root.mainloop()
+
+# Put the e-paper display to sleep when the program ends
+epd.sleep()
+print("E-paper display is now in sleep mode.")
