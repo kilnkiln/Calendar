@@ -60,24 +60,23 @@ def hide_selection_ring():
     selection_ring_visible = False
     render_calendar(current_year)  # Redraw the calendar without the ring
 
-# Put the e-paper display to sleep after 30 seconds of inactivity
-def sleep_epaper():
+# Full reset of the e-paper display
+def reset_epaper():
     global display_asleep
-    print("E-paper display going to sleep due to inactivity.")
-    epd.sleep()
-    display_asleep = True  # Mark the display as asleep
+    print("Resetting e-paper display...")
+    try:
+        epd.reset()  # Perform a hardware reset
+        epd.init()  # Re-initialize the display
+        epd.Clear()  # Clear the display to ensure a fresh state
+        display_asleep = False
+    except Exception as e:
+        print(f"Error resetting e-paper display: {e}")
 
 # Wake up the e-paper display if it's asleep
 def wake_up_epaper():
     global display_asleep
     if display_asleep:
-        print("Waking up e-paper display...")
-        try:
-            epd.init()  # Full reinitialization
-            epd.Clear()  # Clear the display to prevent artifacts
-            display_asleep = False
-        except Exception as e:
-            print(f"Error waking up e-paper display: {e}")
+        reset_epaper()
 
 # Reset the timer to hide the selection ring and sleep the display
 def reset_timers():
@@ -91,7 +90,7 @@ def reset_timers():
     # Reset the timer for sleeping the e-paper display
     if sleep_timer_id:
         root.after_cancel(sleep_timer_id)
-    sleep_timer_id = root.after(30000, sleep_epaper)  # 30 seconds
+    sleep_timer_id = root.after(30000, reset_epaper)  # 30 seconds for reset
 
 # Perform a quick refresh for the calendar display
 def quick_refresh():
