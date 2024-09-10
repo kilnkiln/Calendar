@@ -8,13 +8,12 @@ from datetime import datetime
 # Directory to store the calendar data
 DATA_DIR = '/home/admin/CalendarDatabase'
 
-# Initialize the e-paper display with a quick refresh mode
+# Initialize the e-paper display
 def initialize_epaper():
     try:
         epd = epd13in3k.EPD()
         epd.init()  # Full initialization for the first display
-        epd.Clear()  # Clear the display to ensure no residual images
-        print("E-paper display initialized and cleared with full refresh.")
+        print("E-paper display initialized.")
         return epd
     except Exception as e:
         print(f"Error initializing e-paper display: {e}")
@@ -55,11 +54,17 @@ def load_shaded_days(year):
         print(f"No file found for {year}. Creating new file...")
         save_shaded_days(year)
 
-# Hide the selection ring after 30 seconds of inactivity
-def hide_selection_ring():
-    global selection_ring_visible
-    selection_ring_visible = False
-    render_calendar(current_year)  # Redraw the calendar without the ring
+# Revert the selection ring to the current day after 30 seconds of inactivity
+def revert_selection_to_current_day():
+    global current_day_index, current_month_index, selection_ring_visible, current_date
+    print("Reverting selection ring to current day.")
+
+    # Set the selection ring back to the current date
+    current_month_index = current_date.month - 1
+    current_day_index = current_date.day - 1
+
+    selection_ring_visible = True
+    render_calendar(current_year)  # Redraw the calendar with the ring on the current day
 
 # Put the e-paper display to sleep after 30 seconds of inactivity
 def sleep_epaper():
@@ -68,22 +73,25 @@ def sleep_epaper():
     epd.sleep()
     display_asleep = True  # Mark the display as asleep
 
-# Wake up the e-paper display if it's asleep
+# Wake up the e-paper display without clearing it
 def wake_up_epaper():
     global display_asleep, epd
     if display_asleep:
         print("Waking up e-paper display...")
-        epd = initialize_epaper()  # Reinitialize the display to wake it up
-        display_asleep = False
+        try:
+            epd.init()  # Reinitialize the display without clearing
+            display_asleep = False
+        except Exception as e:
+            print(f"Error waking up e-paper display: {e}")
 
-# Reset the timer to hide the selection ring and sleep the display
+# Reset the timer to revert the selection ring and sleep the display
 def reset_timers():
     global selection_ring_timer_id, sleep_timer_id
 
-    # Reset the timer for hiding the selection ring
+    # Reset the timer for reverting the selection ring
     if selection_ring_timer_id:
         root.after_cancel(selection_ring_timer_id)
-    selection_ring_timer_id = root.after(30000, hide_selection_ring)  # 30 seconds
+    selection_ring_timer_id = root.after(30000, revert_selection_to_current_day)  # 30 seconds
 
     # Reset the timer for sleeping the e-paper display
     if sleep_timer_id:
@@ -94,7 +102,6 @@ def reset_timers():
 def quick_refresh():
     try:
         wake_up_epaper()  # Ensure the e-paper is awake before refreshing
-        epd.Clear(0xFF)  # Use a faster clear method (may not be available on all models)
         print("Quick refresh mode activated.")
     except Exception as e:
         print(f"Error during quick refresh: {e}")
