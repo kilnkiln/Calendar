@@ -74,8 +74,11 @@ def render_calendar(year):
                 day_x = start_x + (start_day + day - 1) * (20 + 5)
                 day_y = month_y
 
-                # Center the day number inside the box
-                text_width, text_height = draw.textsize(str(day).zfill(2), font=font_small)
+                # Get the bounding box of the day number to center it
+                bbox = draw.textbbox((0, 0), str(day).zfill(2), font=font_small)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                
                 text_x = day_x + (20 - text_width) // 2  # Center horizontally
                 text_y = day_y + (30 - text_height) // 2  # Center vertically
 
@@ -100,7 +103,6 @@ def render_calendar(year):
         print("Full refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
-
 
 
 # Initialize the e-paper display
