@@ -54,6 +54,17 @@ def load_shaded_days(year):
         print(f"No file found for {year}. Creating new file...")
         save_shaded_days(year)
 
+# Check if the e-paper display is asleep and wake it up
+def check_and_wake_display():
+    global display_asleep, epd
+    if display_asleep:
+        print("Waking up e-paper display...")
+        try:
+            epd = initialize_epaper()  # Reinitialize the display
+            display_asleep = False
+        except Exception as e:
+            print(f"Error waking up e-paper display: {e}")
+
 # Revert the selection ring to the current day after 30 seconds of inactivity
 def revert_selection_to_current_day():
     global current_day_index, current_month_index, selection_ring_visible, current_date
@@ -73,17 +84,6 @@ def sleep_epaper():
     epd.sleep()
     display_asleep = True  # Mark the display as asleep
 
-# Wake up the e-paper display without clearing it
-def wake_up_epaper():
-    global display_asleep, epd
-    if display_asleep:
-        print("Waking up e-paper display...")
-        try:
-            epd.init()  # Reinitialize the display without clearing
-            display_asleep = False
-        except Exception as e:
-            print(f"Error waking up e-paper display: {e}")
-
 # Reset the timer to revert the selection ring and sleep the display
 def reset_timers():
     global selection_ring_timer_id, sleep_timer_id
@@ -101,7 +101,7 @@ def reset_timers():
 # Perform a quick refresh for the calendar display
 def quick_refresh():
     try:
-        wake_up_epaper()  # Ensure the e-paper is awake before refreshing
+        check_and_wake_display()  # Ensure the e-paper is awake before refreshing
         print("Quick refresh mode activated.")
     except Exception as e:
         print(f"Error during quick refresh: {e}")
@@ -126,7 +126,7 @@ def render_calendar(year):
         return
 
     try:
-        wake_up_epaper()  # Ensure the display is awake before drawing
+        check_and_wake_display()  # Ensure the display is awake before drawing
 
         # Create a blank image (1-bit, black-and-white)
         epd_width = epd.width
@@ -224,6 +224,8 @@ load_shaded_days(current_year)
 def move_selection(direction):
     global current_day_index, current_month_index, selection_ring_visible
 
+    check_and_wake_display()  # Ensure display is awake before movement
+
     if not selection_ring_visible:
         # Show the ring on the current day for the first key press
         selection_ring_visible = True
@@ -250,6 +252,9 @@ def move_selection(direction):
 # Example function to shade/unshade a day and refresh the display
 def shade_day():
     global shaded_days
+
+    check_and_wake_display()  # Ensure display is awake before shading
+
     current_day = (current_month_index + 1, current_day_index + 1)
 
     # Toggle shading on the current day
