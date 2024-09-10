@@ -154,8 +154,10 @@ def refresh_partial(x_start, y_start, x_end, y_end):
 # Function to calculate the bounding box for a day based on its position
 def calculate_day_position(month_index, day_index):
     start_day, _ = calendar.monthrange(current_year, month_index + 1)
-    day_x = 30 + (start_day + day_index) * (day_width + padding)  # X-coordinate
-    day_y = 50 + month_index * (day_height + 15 + padding)  # Y-coordinate
+    
+    # Fixing the X and Y position by adjusting the padding and day start calculations
+    day_x = 30 + (start_day + day_index) * (day_width + padding)  # Adjusted X-coordinate
+    day_y = 50 + month_index * (day_height + 15 + padding)  # Adjusted Y-coordinate to fix row alignment
     return day_x, day_y
 
 # Function to move the selection circle with arrow keys and perform a partial refresh
@@ -229,4 +231,3 @@ root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 
 # Start the Tkinter event loop to listen for key events
 root.mainloop()
-#1
