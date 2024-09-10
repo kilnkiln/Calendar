@@ -109,11 +109,121 @@ def render_calendar(year):
 # Initialize the e-paper display
 epd = initialize_epaper()
 
+<<<<<<< HEAD
 # Initialize current selected day (for arrow key navigation)
 current_date = datetime.now()
 current_year = current_date.year
 current_month_index = current_date.month - 1
 current_day_index = current_date.day - 1  # Zero-based index for days
+=======
+    # Clear the day area first (draw white rectangle) to avoid overlaps or artifacts
+    draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], fill=255)
+
+    # Draw the selection circle if the day is selected
+    if is_selected:
+        draw.ellipse([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
+
+    # Draw a shaded circle if the day is shaded
+    if is_shaded:
+        draw.ellipse([day_x + 3, day_y + 3, day_x + day_width - 3, day_y + day_height - 3], fill=0)
+
+    # Draw the day number
+    text_x = day_x + (day_width // 2) - 5
+    text_y = day_y + (day_height // 2) - 8
+    draw.text((text_x, text_y), str(day).zfill(2), font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 14), fill=0)
+
+# Initialize partial mode (called once after full refresh)
+def init_partial_mode():
+    try:
+        epd.init_Part()  # Crucial: Initialize partial mode only once after full refresh
+        print("Partial refresh mode initialized")
+    except Exception as e:
+        print(f"Error initializing partial mode: {e}")
+
+# Function to perform a partial refresh
+def refresh_partial(x_start, y_start, x_end, y_end):
+    global global_image
+    try:
+        # Perform a partial update (refresh only the target area)
+        print(f"Partial refresh at ({x_start}, {y_start}) to ({x_end}, {y_end})")  # DEBUG
+        epd.display_Partial(epd.getbuffer(global_image), max(x_start - 2, 0), max(y_start - 2, 0), min(x_end + 2, epd.width), min(y_end + 2, epd.height))
+    except Exception as e:
+        print(f"Error with partial refresh: {e}")
+
+# Function to calculate the bounding box for a day based on its position
+def calculate_day_position(month_index, day_index):
+    start_day, _ = calendar.monthrange(current_year, month_index + 1)
+    
+    # Fixing the X and Y position by adjusting the padding and day start calculations
+    day_x = 30 + (start_day + day_index) * (day_width + padding)  # Adjusted X-coordinate
+    day_y = 50 + month_index * (day_height + 15 + padding)  # Adjusted Y-coordinate to fix row alignment
+    
+    # DEBUG: Log the calculated coordinates
+    print(f"Calculated position for Month: {month_index + 1}, Day: {day_index + 1} -> X: {day_x}, Y: {day_y}")
+    
+    return day_x, day_y
+
+# Function to move the selection circle with arrow keys and perform a partial refresh
+def move_selection(direction):
+    global current_day_index, current_month_index
+
+    old_day_index = current_day_index
+    old_month_index = current_month_index
+
+    # Move the selection based on the direction
+    if direction == "right":
+        current_day_index += 1
+        # Handle end of month and move to the next month
+        if current_day_index >= calendar.monthrange(current_year, current_month_index + 1)[1]:
+            current_day_index = 0
+            current_month_index = (current_month_index + 1) % 12
+    elif direction == "left":
+        current_day_index -= 1
+        # Handle start of month and move to the previous month
+        if current_day_index < 0:
+            current_month_index = (current_month_index - 1) % 12
+            current_day_index = calendar.monthrange(current_year, current_month_index + 1)[1] - 1
+
+    # Calculate the old and new positions
+    old_day_x, old_day_y = calculate_day_position(old_month_index, old_day_index)
+    new_day_x, new_day_y = calculate_day_position(current_month_index, current_day_index)
+
+    # Make sure the Y-coordinate stays constant
+    y_end = old_day_y + day_height  # Y-end is constant for all days in the same row
+
+    # DEBUG: Log the coordinates for partial refresh
+    print(f"Partial refresh (old): ({old_day_x}, {old_day_y}) to ({old_day_x + day_width}, {y_end})")
+    print(f"Partial refresh (new): ({new_day_x}, {new_day_y}) to ({new_day_x + day_width}, {y_end})")
+
+    # Redraw the old selection area (remove the circle)
+    render_partial_day(old_day_x, old_day_y, day_width, day_height, old_day_index + 1, is_selected=False, is_shaded=(old_month_index + 1, old_day_index + 1) in shaded_days)
+
+    # Redraw the new selection area (add the circle)
+    render_partial_day(new_day_x, new_day_y, day_width, day_height, current_day_index + 1, is_selected=True, is_shaded=(current_month_index + 1, current_day_index + 1) in shaded_days)
+
+    # Perform partial refresh for the old and new areas (with consistent Y-end)
+    refresh_partial(old_day_x, old_day_y, old_day_x + day_width, y_end)  # Refresh old day area
+    refresh_partial(new_day_x, new_day_y, new_day_x + day_width, y_end)  # Refresh new day area
+
+
+# Function to shade/unshade a day (on spacebar press) and perform a partial refresh
+def shade_day():
+    global shaded_days
+    current_day = (current_month_index + 1, current_day_index + 1)
+    if current_day in shaded_days:
+        shaded_days.remove(current_day)
+    else:
+        shaded_days.add(current_day)
+
+    # Calculate the position of the day box for partial refresh
+    day_x, day_y = calculate_day_position(current_month_index, current_day_index)
+
+    # Redraw the day with shading/unshading
+    render_partial_day(day_x, day_y, day_width, day_height, current_day_index + 1, is_selected=True, is_shaded=current_day in shaded_days)
+
+    # Perform partial refresh for the shaded area
+    refresh_partial(day_x, day_y, day_x + day_width, day_y + day_height)
+>>>>>>> parent of 78cfed5 (Update main.py)
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
