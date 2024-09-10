@@ -112,7 +112,7 @@ def render_calendar(year, selected_day=None):
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
-# Initialize partial mode (called once)
+# Initialize partial mode (called once after full refresh)
 def init_partial_mode():
     try:
         epd.init_Part()
@@ -186,7 +186,10 @@ root.geometry("400x200")  # Increase the window size for visibility
 root.title("Calendar Controller")  # Set a title for the window
 root.resizable(False, False)  # Disable resizing
 
-# Initialize the partial mode once
+# First render of the calendar and full refresh
+render_calendar(current_year)
+
+# After full refresh, switch to partial refresh mode
 init_partial_mode()
 
 # Bind keys to the movement and shading functions
@@ -195,5 +198,4 @@ root.bind('<Left>', lambda event: move_selection("left"))  # Left arrow to move 
 root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 
 # Start the Tkinter event loop to listen for key events
-render_calendar(current_year)
 root.mainloop()
