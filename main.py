@@ -113,7 +113,13 @@ def render_calendar(year):
         print(f"Error displaying on e-paper: {e}")
 
 # Function to render only the selected day for partial refresh
-def render_partial_day(draw, day_x, day_y, day_width, day_height, day, is_selected, is_shaded):
+def render_partial_day(day_x, day_y, day_width, day_height, day, is_selected, is_shaded):
+    global global_image
+    draw = ImageDraw.Draw(global_image)
+
+    # Clear the day area first (draw white rectangle) to avoid overlaps or artifacts
+    draw.rectangle([day_x, day_y, day_x + day_width, day_y + day_height], fill=255)
+
     # Draw the selection circle if the day is selected
     if is_selected:
         draw.ellipse([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
@@ -170,15 +176,14 @@ def move_selection(direction):
     old_day_x = 30 + (start_day + old_day_index) * (20 + 5)  # Adjust based on day width and padding
     old_day_y = 50 + old_month_index * (30 + 15)  # Vertical position for each month
 
-    draw = ImageDraw.Draw(global_image)
-    render_partial_day(draw, old_day_x, old_day_y, 20, 30, old_day_index + 1, is_selected=False, is_shaded=(old_month_index + 1, old_day_index + 1) in shaded_days)
+    render_partial_day(old_day_x, old_day_y, 20, 30, old_day_index + 1, is_selected=False, is_shaded=(old_month_index + 1, old_day_index + 1) in shaded_days)
 
     # Redraw the new selection area (add the circle)
     start_day, _ = calendar.monthrange(current_year, current_month_index + 1)
     new_day_x = 30 + (start_day + current_day_index) * (20 + 5)  # Adjust based on day width and padding
     new_day_y = 50 + current_month_index * (30 + 15)  # Vertical position for each month
 
-    render_partial_day(draw, new_day_x, new_day_y, 20, 30, current_day_index + 1, is_selected=True, is_shaded=(current_month_index + 1, current_day_index + 1) in shaded_days)
+    render_partial_day(new_day_x, new_day_y, 20, 30, current_day_index + 1, is_selected=True, is_shaded=(current_month_index + 1, current_day_index + 1) in shaded_days)
 
     # Perform partial refresh for the areas
     refresh_partial(old_day_x - 10, old_day_y - 10, old_day_x + 30, old_day_y + 30)
@@ -199,8 +204,7 @@ def shade_day():
     day_y = 50 + current_month_index * (30 + 15)  # Vertical position for each month
 
     # Redraw the day with shading/unshading
-    draw = ImageDraw.Draw(global_image)
-    render_partial_day(draw, day_x, day_y, 20, 30, current_day_index + 1, is_selected=True, is_shaded=current_day in shaded_days)
+    render_partial_day(day_x, day_y, 20, 30, current_day_index + 1, is_selected=True, is_shaded=current_day in shaded_days)
 
     # Perform partial refresh for the shaded area
     refresh_partial(day_x - 10, day_y - 10, day_x + 30, day_y + 30)
