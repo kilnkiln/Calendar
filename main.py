@@ -1,8 +1,12 @@
+import os
 import tkinter as tk
 from waveshare_epd import epd13in3k
 from PIL import Image, ImageDraw, ImageFont
 import calendar
 from datetime import datetime
+
+# Directory to store the calendar data
+DATA_DIR = '/home/admin/CalendarDatabase'
 
 # Initialize the e-paper display with a quick refresh mode
 def initialize_epaper():
@@ -18,6 +22,32 @@ def initialize_epaper():
 
 # Global variable to store the shaded days
 shaded_days = set()
+
+# Save shaded days to a file
+def save_shaded_days(year):
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+
+    file_path = os.path.join(DATA_DIR, f'{year}.txt')
+
+    with open(file_path, 'w') as file:
+        for month, day in sorted(shaded_days):
+            file.write(f'{month},{day}\n')
+    print(f"Shaded days saved to {file_path}")
+
+# Load shaded days from a file
+def load_shaded_days(year):
+    file_path = os.path.join(DATA_DIR, f'{year}.txt')
+
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            for line in file:
+                month, day = map(int, line.strip().split(','))
+                shaded_days.add((month, day))
+        print(f"Shaded days loaded from {file_path}")
+    else:
+        print(f"No file found for {year}. Creating new file...")
+        save_shaded_days(year)
 
 # Perform a quick refresh for the calendar display
 def quick_refresh():
@@ -121,6 +151,9 @@ current_year = current_date.year
 current_month_index = current_date.month - 1
 current_day_index = current_date.day - 1  # Zero-based index for days
 
+# Load the shaded days for the current year
+load_shaded_days(current_year)
+
 # Example function to update calendar on arrow key presses with full refresh
 def move_selection(direction):
     global current_day_index, current_month_index
@@ -149,6 +182,9 @@ def shade_day():
         shaded_days.remove(current_day)
     else:
         shaded_days.add(current_day)
+
+    # Save the shaded days after any change
+    save_shaded_days(current_year)
 
     # Redraw the entire calendar with updated shading
     render_calendar(current_year)
