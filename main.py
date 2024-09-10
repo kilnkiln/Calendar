@@ -229,3 +229,4 @@ root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 
 # Start the Tkinter event loop to listen for key events
 root.mainloop()
+#1
