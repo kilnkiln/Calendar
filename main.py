@@ -195,9 +195,10 @@ def move_selection(direction):
     new_day_x, new_day_y = calculate_day_position(current_month_index, current_day_index)
     render_partial_day(new_day_x, new_day_y, day_width, day_height, current_day_index + 1, is_selected=True, is_shaded=(current_month_index + 1, current_day_index + 1) in shaded_days)
 
-    # Perform partial refresh for the areas
+    # Perform partial refresh using exact coordinates for the old and new day
     refresh_partial(old_day_x, old_day_y, old_day_x + day_width, old_day_y + day_height)
     refresh_partial(new_day_x, new_day_y, new_day_x + day_width, new_day_y + day_height)
+
 
 # Function to shade/unshade a day (on spacebar press) and perform a partial refresh
 def shade_day():
