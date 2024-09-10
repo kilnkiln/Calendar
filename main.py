@@ -58,7 +58,7 @@ def quick_refresh():
     except Exception as e:
         print(f"Error during quick refresh: {e}")
 
-# Main function to render the calendar
+# Draw the selection circle and center the day number
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
 
@@ -131,7 +131,7 @@ def render_calendar(year):
 
                 # Draw a shaded circle if the day is shaded
                 if (month, day) in shaded_days:
-                    draw.ellipse([day_x + 3, day_y + 3, day_x + 20 - 3, day_y + 30 - 3], fill=0)
+                    draw.ellipse([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
 
                 # Draw the day number
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
