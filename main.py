@@ -192,9 +192,12 @@ def move_selection(direction):
     old_day_x, old_day_y = calculate_day_position(old_month_index, old_day_index)
     new_day_x, new_day_y = calculate_day_position(current_month_index, current_day_index)
 
+    # Make sure the Y-coordinate stays constant
+    y_end = old_day_y + day_height  # Y-end is constant for all days in the same row
+
     # DEBUG: Log the coordinates for partial refresh
-    print(f"Partial refresh (old): ({old_day_x}, {old_day_y}) to ({old_day_x + day_width}, {old_day_y + day_height})")
-    print(f"Partial refresh (new): ({new_day_x}, {new_day_y}) to ({new_day_x + day_width}, {new_day_y + day_height})")
+    print(f"Partial refresh (old): ({old_day_x}, {old_day_y}) to ({old_day_x + day_width}, {y_end})")
+    print(f"Partial refresh (new): ({new_day_x}, {new_day_y}) to ({new_day_x + day_width}, {y_end})")
 
     # Redraw the old selection area (remove the circle)
     render_partial_day(old_day_x, old_day_y, day_width, day_height, old_day_index + 1, is_selected=False, is_shaded=(old_month_index + 1, old_day_index + 1) in shaded_days)
@@ -202,9 +205,9 @@ def move_selection(direction):
     # Redraw the new selection area (add the circle)
     render_partial_day(new_day_x, new_day_y, day_width, day_height, current_day_index + 1, is_selected=True, is_shaded=(current_month_index + 1, current_day_index + 1) in shaded_days)
 
-    # Perform partial refresh **only once per area** to prevent multiple refreshes
-    refresh_partial(old_day_x, old_day_y, old_day_x + day_width, old_day_y + day_height)  # Refresh old day area
-    refresh_partial(new_day_x, new_day_y, new_day_x + day_width, new_day_y + day_height)  # Refresh new day area
+    # Perform partial refresh for the old and new areas (with consistent Y-end)
+    refresh_partial(old_day_x, old_day_y, old_day_x + day_width, y_end)  # Refresh old day area
+    refresh_partial(new_day_x, new_day_y, new_day_x + day_width, y_end)  # Refresh new day area
 
 
 # Function to shade/unshade a day (on spacebar press) and perform a partial refresh
