@@ -96,6 +96,7 @@ def render_calendar(year):
         print(f"Error displaying on e-paper: {e}")
 
 
+
 # Initialize the e-paper display
 epd = initialize_epaper()
 
