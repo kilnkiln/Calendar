@@ -20,7 +20,7 @@ def initialize_epaper():
 # Create a set to store shaded days
 shaded_days = set()
 
-# Draw the selection circle if the day is selected
+# Draw the selection circle and center the day number
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
 
@@ -74,19 +74,25 @@ def render_calendar(year):
                 day_x = start_x + (start_day + day - 1) * (20 + 5)
                 day_y = month_y
 
-                text_x = day_x + (20 // 2) - 5
-                text_y = day_y + (30 // 2) - 8
+                # Center the day number inside the box
+                text_width, text_height = draw.textsize(str(day).zfill(2), font=font_small)
+                text_x = day_x + (20 - text_width) // 2  # Center horizontally
+                text_y = day_y + (30 - text_height) // 2  # Center vertically
+
+                # Center the circle around the day number
+                circle_diameter = min(20, 30)  # Use the smaller of day_width and day_height
+                circle_x = day_x + (20 - circle_diameter) // 2  # Center the circle horizontally
+                circle_y = day_y + (30 - circle_diameter) // 2  # Center the circle vertically
 
                 # Draw the selection circle if the day is selected
                 if month - 1 == current_month_index and day - 1 == current_day_index:
-                    circle_diameter = min(20, 30)  # Use the smaller of day_width and day_height
-                    draw.ellipse([day_x, day_y, day_x + circle_diameter, day_y + circle_diameter], outline=0, width=2)
+                    draw.ellipse([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], outline=0, width=2)
 
                 # Draw a shaded circle if the day is shaded
                 if (month, day) in shaded_days:
                     draw.ellipse([day_x + 3, day_y + 3, day_x + 20 - 3, day_y + 30 - 3], fill=0)
 
-                # Draw the day number with a leading zero
+                # Draw the day number
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
         # Perform a full refresh for the calendar display
