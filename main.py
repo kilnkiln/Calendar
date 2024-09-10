@@ -174,6 +174,7 @@ def move_selection(direction):
     old_day_index = current_day_index
     old_month_index = current_month_index
 
+    # Move the selection based on the direction
     if direction == "right":
         current_day_index += 1
         # Handle end of month and move to the next month
@@ -187,17 +188,23 @@ def move_selection(direction):
             current_month_index = (current_month_index - 1) % 12
             current_day_index = calendar.monthrange(current_year, current_month_index + 1)[1] - 1
 
-    # Redraw the old selection area (remove the circle)
+    # Calculate the old and new positions
     old_day_x, old_day_y = calculate_day_position(old_month_index, old_day_index)
+    new_day_x, new_day_y = calculate_day_position(current_month_index, current_day_index)
+
+    # DEBUG: Log the coordinates for partial refresh
+    print(f"Partial refresh (old): ({old_day_x}, {old_day_y}) to ({old_day_x + day_width}, {old_day_y + day_height})")
+    print(f"Partial refresh (new): ({new_day_x}, {new_day_y}) to ({new_day_x + day_width}, {new_day_y + day_height})")
+
+    # Redraw the old selection area (remove the circle)
     render_partial_day(old_day_x, old_day_y, day_width, day_height, old_day_index + 1, is_selected=False, is_shaded=(old_month_index + 1, old_day_index + 1) in shaded_days)
 
     # Redraw the new selection area (add the circle)
-    new_day_x, new_day_y = calculate_day_position(current_month_index, current_day_index)
     render_partial_day(new_day_x, new_day_y, day_width, day_height, current_day_index + 1, is_selected=True, is_shaded=(current_month_index + 1, current_day_index + 1) in shaded_days)
 
-    # Perform partial refresh using exact coordinates for the old and new day
-    refresh_partial(old_day_x, old_day_y, old_day_x + day_width, old_day_y + day_height)
-    refresh_partial(new_day_x, new_day_y, new_day_x + day_width, new_day_y + day_height)
+    # Perform partial refresh **only once per area** to prevent multiple refreshes
+    refresh_partial(old_day_x, old_day_y, old_day_x + day_width, old_day_y + day_height)  # Refresh old day area
+    refresh_partial(new_day_x, new_day_y, new_day_x + day_width, new_day_y + day_height)  # Refresh new day area
 
 
 # Function to shade/unshade a day (on spacebar press) and perform a partial refresh
