@@ -20,7 +20,7 @@ def initialize_epaper():
 # Create a set to store shaded days
 shaded_days = set()
 
-# Function to render the full calendar and perform a full refresh
+# Draw the selection circle if the day is selected
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
 
@@ -79,7 +79,8 @@ def render_calendar(year):
 
                 # Draw the selection circle if the day is selected
                 if month - 1 == current_month_index and day - 1 == current_day_index:
-                    draw.ellipse([day_x, day_y, day_x + 20, day_y + 30], outline=0, width=2)
+                    circle_diameter = min(20, 30)  # Use the smaller of day_width and day_height
+                    draw.ellipse([day_x, day_y, day_x + circle_diameter, day_y + circle_diameter], outline=0, width=2)
 
                 # Draw a shaded circle if the day is shaded
                 if (month, day) in shaded_days:
@@ -93,6 +94,7 @@ def render_calendar(year):
         print("Full refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
+
 
 # Initialize the e-paper display
 epd = initialize_epaper()
