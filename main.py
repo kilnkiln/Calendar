@@ -33,6 +33,11 @@ current_year = current_date.year
 current_month_index = current_date.month - 1
 current_day_index = current_date.day - 1  # Zero-based index for days
 
+# Dimensions for each day box
+day_width = 20
+day_height = 30
+padding = 5
+
 # Function to render the full calendar and perform a full refresh
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
@@ -57,19 +62,14 @@ def render_calendar(year):
         # Draw the year header at the top
         draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
 
-        # Define dimensions for each day box
-        day_width = 20
-        day_height = 30
-        padding = 5
-
         # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
         january_start_day, _ = calendar.monthrange(year, 1)
 
         # Define the starting X position for the weekday row and days
         start_x = padding + 30  # Spacing between month label and day start
+        weekday_y = 50  # Vertical position for the weekday header row
 
         # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
-        weekday_y = 50  # Vertical position for the weekday header row
         for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
             day_x = start_x + i * (day_width + padding)
             weekday_index = (january_start_day + i) % 7
@@ -145,8 +145,8 @@ def init_partial_mode():
 def refresh_partial(x_start, y_start, x_end, y_end):
     global global_image
     try:
-        # Perform a partial update
-        epd.display_Partial(epd.getbuffer(global_image), x_start, y_start, x_end, y_end)
+        # Perform a partial update (make the refresh area slightly larger)
+        epd.display_Partial(epd.getbuffer(global_image), max(x_start - 2, 0), max(y_start - 2, 0), min(x_end + 2, epd.width), min(y_end + 2, epd.height))
         print(f"Partial refresh: ({x_start}, {y_start}) to ({x_end}, {y_end})")
     except Exception as e:
         print(f"Error with partial refresh: {e}")
