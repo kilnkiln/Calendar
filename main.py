@@ -17,6 +17,9 @@ def initialize_epaper():
         print(f"Error initializing e-paper display: {e}")
         return None
 
+# Create a set to store shaded days
+shaded_days = set()
+
 # Function to render the full calendar and perform a full refresh
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
@@ -74,6 +77,14 @@ def render_calendar(year):
                 text_x = day_x + (20 // 2) - 5
                 text_y = day_y + (30 // 2) - 8
 
+                # Draw the selection circle if the day is selected
+                if month - 1 == current_month_index and day - 1 == current_day_index:
+                    draw.ellipse([day_x, day_y, day_x + 20, day_y + 30], outline=0, width=2)
+
+                # Draw a shaded circle if the day is shaded
+                if (month, day) in shaded_days:
+                    draw.ellipse([day_x + 3, day_y + 3, day_x + 20 - 3, day_y + 30 - 3], fill=0)
+
                 # Draw the day number with a leading zero
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
@@ -110,6 +121,20 @@ def move_selection(direction):
     # Redraw the entire calendar with the updated selection
     render_calendar(current_year)
 
+# Example function to shade/unshade a day and refresh the display
+def shade_day():
+    global shaded_days
+    current_day = (current_month_index + 1, current_day_index + 1)
+
+    # Toggle shading on the current day
+    if current_day in shaded_days:
+        shaded_days.remove(current_day)
+    else:
+        shaded_days.add(current_day)
+
+    # Redraw the entire calendar with updated shading
+    render_calendar(current_year)
+
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
 
@@ -124,6 +149,7 @@ render_calendar(current_year)
 # Bind keys to the movement and shading functions
 root.bind('<Right>', lambda event: move_selection("right"))
 root.bind('<Left>', lambda event: move_selection("left"))
+root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 
 # Start the Tkinter event loop
 root.mainloop()
