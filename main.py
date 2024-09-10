@@ -96,6 +96,9 @@ def render_calendar(year):
                 text_x = day_x + (day_width // 2) - 5
                 text_y = day_y + (day_height // 2) - 8
 
+                # DEBUG: Log each day's position
+                print(f"Month: {month}, Day: {day}, X: {day_x}, Y: {day_y}")
+
                 # Draw the selection circle if the day is selected
                 if month - 1 == current_month_index and day - 1 == current_day_index:
                     draw.ellipse([day_x, day_y, day_x + day_width, day_y + day_height], outline=0, width=2)
@@ -146,8 +149,8 @@ def refresh_partial(x_start, y_start, x_end, y_end):
     global global_image
     try:
         # Perform a partial update (refresh only the target area)
+        print(f"Partial refresh at ({x_start}, {y_start}) to ({x_end}, {y_end})")  # DEBUG
         epd.display_Partial(epd.getbuffer(global_image), max(x_start - 2, 0), max(y_start - 2, 0), min(x_end + 2, epd.width), min(y_end + 2, epd.height))
-        print(f"Partial refresh: ({x_start}, {y_start}) to ({x_end}, {y_end})")
     except Exception as e:
         print(f"Error with partial refresh: {e}")
 
@@ -158,6 +161,10 @@ def calculate_day_position(month_index, day_index):
     # Fixing the X and Y position by adjusting the padding and day start calculations
     day_x = 30 + (start_day + day_index) * (day_width + padding)  # Adjusted X-coordinate
     day_y = 50 + month_index * (day_height + 15 + padding)  # Adjusted Y-coordinate to fix row alignment
+    
+    # DEBUG: Log the calculated coordinates
+    print(f"Calculated position for Month: {month_index + 1}, Day: {day_index + 1} -> X: {day_x}, Y: {day_y}")
+    
     return day_x, day_y
 
 # Function to move the selection circle with arrow keys and perform a partial refresh
