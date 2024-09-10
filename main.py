@@ -72,8 +72,12 @@ def wake_up_epaper():
     global display_asleep
     if display_asleep:
         print("Waking up e-paper display...")
-        epd.init()  # Reinitialize the display
-        display_asleep = False
+        try:
+            epd.init()  # Full reinitialization
+            epd.Clear()  # Clear the display to prevent artifacts
+            display_asleep = False
+        except Exception as e:
+            print(f"Error waking up e-paper display: {e}")
 
 # Reset the timer to hide the selection ring and sleep the display
 def reset_timers():
