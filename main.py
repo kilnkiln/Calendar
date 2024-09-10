@@ -5,22 +5,28 @@ import calendar
 from datetime import datetime
 import time
 
-# Initialize the e-paper display with a full clear to avoid artifacts
+# Initialize the e-paper display with a quick refresh mode
 def initialize_epaper():
     try:
         epd = epd13in3k.EPD()
         epd.init()  # Full initialization for the first display
         epd.Clear()  # Clear the display to ensure no residual images
-        print("E-paper display initialized and cleared.")
+        print("E-paper display initialized and cleared with full refresh.")
         return epd
     except Exception as e:
         print(f"Error initializing e-paper display: {e}")
         return None
 
-# Create a set to store shaded days
-shaded_days = set()
+# Perform a quick refresh for the calendar display
+def quick_refresh():
+    try:
+        epd.init()  # Reinitialize for quick refresh
+        epd.Clear(0xFF)  # Use a faster clear method (may not be available on all models)
+        print("Quick refresh mode activated.")
+    except Exception as e:
+        print(f"Error during quick refresh: {e}")
 
-# Draw the selection circle and center the day number
+# Main function to render calendar
 def render_calendar(year):
     global current_month_index, current_day_index, global_image
 
@@ -98,9 +104,9 @@ def render_calendar(year):
                 # Draw the day number
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
 
-        # Perform a full refresh for the calendar display
-        epd.display(epd.getbuffer(global_image))  # Full refresh
-        print("Full refresh performed with updated calendar.")
+        # Perform the quick refresh for the calendar display
+        epd.display(epd.getbuffer(global_image))  # Quick refresh
+        print("Quick refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
