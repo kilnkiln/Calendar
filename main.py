@@ -136,7 +136,7 @@ def render_partial_day(day_x, day_y, day_width, day_height, day, is_selected, is
 # Initialize partial mode (called once after full refresh)
 def init_partial_mode():
     try:
-        epd.init_Part()
+        epd.init_Part()  # Crucial: Initialize partial mode only once after full refresh
         print("Partial refresh mode initialized")
     except Exception as e:
         print(f"Error initializing partial mode: {e}")
@@ -145,7 +145,7 @@ def init_partial_mode():
 def refresh_partial(x_start, y_start, x_end, y_end):
     global global_image
     try:
-        # Perform a partial update (make the refresh area slightly larger)
+        # Perform a partial update (refresh only the target area)
         epd.display_Partial(epd.getbuffer(global_image), max(x_start - 2, 0), max(y_start - 2, 0), min(x_end + 2, epd.width), min(y_end + 2, epd.height))
         print(f"Partial refresh: ({x_start}, {y_start}) to ({x_end}, {y_end})")
     except Exception as e:
@@ -222,7 +222,7 @@ root.resizable(False, False)  # Disable resizing
 render_calendar(current_year)
 
 # After full refresh, switch to partial refresh mode
-init_partial_mode()
+init_partial_mode()  # Crucial: Initialize partial mode once, after full refresh
 
 # Bind keys to the movement and shading functions
 root.bind('<Right>', lambda event: move_selection("right"))  # Right arrow to move selection
