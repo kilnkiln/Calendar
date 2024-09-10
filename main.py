@@ -27,6 +27,7 @@ selection_ring_timer_id = None
 refresh_timer_id = None
 sleep_timer_id = None
 display_asleep = False  # Track if the display is asleep
+epd = initialize_epaper()  # Initialize the e-paper display
 
 # Save shaded days to a file
 def save_shaded_days(year):
@@ -60,23 +61,20 @@ def hide_selection_ring():
     selection_ring_visible = False
     render_calendar(current_year)  # Redraw the calendar without the ring
 
-# Full reset of the e-paper display
-def reset_epaper():
+# Put the e-paper display to sleep after 30 seconds of inactivity
+def sleep_epaper():
     global display_asleep
-    print("Resetting e-paper display...")
-    try:
-        epd.reset()  # Perform a hardware reset
-        epd.init()  # Re-initialize the display
-        epd.Clear()  # Clear the display to ensure a fresh state
-        display_asleep = False
-    except Exception as e:
-        print(f"Error resetting e-paper display: {e}")
+    print("E-paper display going to sleep due to inactivity.")
+    epd.sleep()
+    display_asleep = True  # Mark the display as asleep
 
 # Wake up the e-paper display if it's asleep
 def wake_up_epaper():
-    global display_asleep
+    global display_asleep, epd
     if display_asleep:
-        reset_epaper()
+        print("Waking up e-paper display...")
+        epd = initialize_epaper()  # Reinitialize the display to wake it up
+        display_asleep = False
 
 # Reset the timer to hide the selection ring and sleep the display
 def reset_timers():
@@ -90,7 +88,7 @@ def reset_timers():
     # Reset the timer for sleeping the e-paper display
     if sleep_timer_id:
         root.after_cancel(sleep_timer_id)
-    sleep_timer_id = root.after(30000, reset_epaper)  # 30 seconds for reset
+    sleep_timer_id = root.after(30000, sleep_epaper)  # 30 seconds for sleep
 
 # Perform a quick refresh for the calendar display
 def quick_refresh():
@@ -205,9 +203,6 @@ def render_calendar(year):
         print("Quick refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
-
-# Initialize the e-paper display
-epd = initialize_epaper()
 
 # Initialize current selected day (for arrow key navigation)
 current_date = datetime.now()
