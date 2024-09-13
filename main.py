@@ -128,15 +128,12 @@ def debounce_refresh():
     # Set a new timer to refresh after 1 second
     refresh_timer_id = root.after(1000, lambda: render_calendar(current_year))
 
-# Function to render the shapes in the top right corner
+# Function to render the shapes in a row in the top right corner
 def draw_shape_options(draw, shape_x, shape_y, font_small):
-    # Draw shape options in the top right corner
-    draw.text((shape_x, shape_y), "1", font=font_small, fill=0)
-    draw.ellipse([shape_x + 20, shape_y, shape_x + 40, shape_y + 20], fill=0 if current_shape == 1 else None, outline=0)
-    draw.text((shape_x, shape_y + 30), "2", font=font_small, fill=0)
-    draw.rectangle([shape_x + 20, shape_y + 30, shape_x + 40, shape_y + 50], fill=0 if current_shape == 2 else None, outline=0)
-    draw.text((shape_x, shape_y + 60), "3", font=font_small, fill=0)
-    draw.polygon([shape_x + 20, shape_y + 80, shape_x + 30, shape_y + 60, shape_x + 40, shape_y + 80], fill=0 if current_shape == 3 else None, outline=0)
+    # Display shapes in a single row
+    draw.ellipse([shape_x, shape_y, shape_x + 20, shape_y + 20], fill=0 if current_shape == 1 else None, outline=0)
+    draw.rectangle([shape_x + 30, shape_y, shape_x + 50, shape_y + 20], fill=0 if current_shape == 2 else None, outline=0)
+    draw.polygon([shape_x + 70, shape_y + 20, shape_x + 80, shape_y, shape_x + 90, shape_y + 20], fill=0 if current_shape == 3 else None, outline=0)
 
 # Main function to render the calendar
 def render_calendar(year):
@@ -164,8 +161,8 @@ def render_calendar(year):
         # Draw the year header at the top
         draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
 
-        # Draw shape options at the top right
-        shape_x = epd_width - 100
+        # Draw shape options in a row at the top right
+        shape_x = epd_width - 150
         shape_y = 20
         draw_shape_options(draw, shape_x, shape_y, font_small)
 
@@ -207,32 +204,34 @@ def render_calendar(year):
                 text_x = day_x + (20 - text_width) // 2  # Center horizontally
                 text_y = day_y + (30 - text_height) // 2  # Center vertically
 
-                # Center the circle around the day number
-                circle_diameter = min(20, 30)  # Use the smaller of day_width and day_height
-                circle_x = day_x + (20 - circle_diameter) // 2  # Center the circle horizontally
-                circle_y = day_y + (30 - circle_diameter) // 2  # Center the circle vertically
+                # Center the shape (circle, square, triangle) around the day number
+                shape_diameter = min(20, 30)  # Use the smaller of day_width and day_height
+                shape_x = day_x + (20 - shape_diameter) // 2  # Center the shape horizontally
+                shape_y = day_y + (30 - shape_diameter) // 2  # Center the shape vertically
 
                 # Underline the current day (fixed underline)
                 if month == current_date.month and day == current_date.day:
                     draw.line([day_x, day_y + 35, day_x + 20, day_y + 35], fill=0, width=2)
 
-                # Draw the selection circle if the ring is visible and the day is selected
+                # Draw the selection shape if the ring is visible and the day is selected
                 if selection_ring_visible and month - 1 == current_month_index and day - 1 == current_day_index:
-                    ring_padding = 3  # Add padding to make the ring larger than the shaded circle
-                    draw.ellipse([circle_x - ring_padding, circle_y - ring_padding, 
-                                  circle_x + circle_diameter + ring_padding, 
-                                  circle_y + circle_diameter + ring_padding], 
-                                  outline=0, width=2)
+                    if current_shape == 1:  # Circle
+                        draw.ellipse([shape_x - 3, shape_y - 3, shape_x + shape_diameter + 3, shape_y + shape_diameter + 3], outline=0, width=2)
+                    elif current_shape == 2:  # Square
+                        draw.rectangle([shape_x - 3, shape_y - 3, shape_x + shape_diameter + 3, shape_y + shape_diameter + 3], outline=0, width=2)
+                    elif current_shape == 3:  # Triangle
+                        draw.polygon([shape_x, shape_y + shape_diameter, shape_x + shape_diameter / 2, shape_y,
+                                      shape_x + shape_diameter, shape_y + shape_diameter], outline=0, width=2)
 
                 # Draw a shaded shape if the day is shaded and the current shape matches
                 if (month, day) in shaded_days and shaded_days[(month, day)] == current_shape:
                     if current_shape == 1:  # Circle
-                        draw.ellipse([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
+                        draw.ellipse([shape_x, shape_y, shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
                     elif current_shape == 2:  # Square
-                        draw.rectangle([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
+                        draw.rectangle([shape_x, shape_y, shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
                     elif current_shape == 3:  # Triangle
-                        draw.polygon([circle_x, circle_y + circle_diameter, circle_x + circle_diameter / 2, circle_y,
-                                      circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
+                        draw.polygon([shape_x, shape_y + shape_diameter, shape_x + shape_diameter / 2, shape_y,
+                                      shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
 
                 # Draw the day number
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
