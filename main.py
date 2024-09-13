@@ -174,14 +174,21 @@ def render_calendar(year):
 
         # Define the starting X position for the weekday row and days
         start_x = 30  # Spacing between month label and day start
+        day_width = 25  # Width of each day cell (including spacing)
         weekday_y = 50  # Vertical position for the weekday header row
 
-        # Draw a single continuous row for the weekdays at the top, starting at Jan 1st
+        # Center the weekday labels above the corresponding days
         weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
         for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
-            day_x = start_x + i * (20 + 5)
+            day_x = start_x + i * day_width
             weekday_index = (january_start_day + i) % 7
-            draw.text((day_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
+
+            # Calculate the center position of the weekday label
+            bbox = draw.textbbox((0, 0), weekdays[weekday_index], font=font_small)
+            text_width = bbox[2] - bbox[0]
+            text_x = day_x + (day_width - text_width) // 2
+
+            draw.text((text_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
         # Start drawing months and days staggered according to the start day of the month
         first_month_y = weekday_y + 30 + 15
@@ -196,7 +203,7 @@ def render_calendar(year):
 
             # Draw days of the month in a single row
             for day in range(1, num_days + 1):
-                day_x = start_x + (start_day + day - 1) * (20 + 5)
+                day_x = start_x + (start_day + day - 1) * day_width
                 day_y = month_y
 
                 # Get the bounding box of the day number to center it
@@ -204,17 +211,17 @@ def render_calendar(year):
                 text_width = bbox[2] - bbox[0]
                 text_height = bbox[3] - bbox[1]
                 
-                text_x = day_x + (20 - text_width) // 2  # Center horizontally
+                text_x = day_x + (day_width - text_width) // 2  # Center horizontally
                 text_y = day_y + (30 - text_height) // 2  # Center vertically
 
                 # Center the shape (circle, square, triangle) around the day number
                 shape_diameter = min(20, 30)  # Use the smaller of day_width and day_height
-                shape_x = day_x + (20 - shape_diameter) // 2  # Center the shape horizontally
+                shape_x = day_x + (day_width - shape_diameter) // 2  # Center the shape horizontally
                 shape_y = day_y + (30 - shape_diameter) // 2  # Center the shape vertically
 
                 # Underline the current day (fixed underline)
                 if month == current_date.month and day == current_date.day:
-                    draw.line([day_x, day_y + 35, day_x + 20, day_y + 35], fill=0, width=2)
+                    draw.line([day_x, day_y + 35, day_x + day_width, day_y + 35], fill=0, width=2)
 
                 # Draw the selection shape if the ring is visible and the day is selected
                 if selection_ring_visible and month - 1 == current_month_index and day - 1 == current_day_index:
