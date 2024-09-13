@@ -169,13 +169,16 @@ def render_calendar(year):
         shape_y = 20
         draw_shape_options(draw, shape_x, shape_y, font_small)
 
+        # Adjust these parameters to control spacing
+        weekday_y = 80  # Move the weekdays lower by increasing this value (default was 50)
+        first_month_y = weekday_y + 40  # Adjust this to maintain the spacing between weekdays and month rows (default was 30 + 15)
+
         # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
         january_start_day, _ = calendar.monthrange(year, 1)
 
         # Define the starting X position for the weekday row and days
         start_x = 30  # Spacing between month label and day start
         day_width = 25  # Width of each day cell (including spacing)
-        weekday_y = 50  # Vertical position for the weekday header row
 
         # Center the weekday labels above the corresponding days
         weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -191,8 +194,6 @@ def render_calendar(year):
             draw.text((text_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
         # Start drawing months and days staggered according to the start day of the month
-        first_month_y = weekday_y + 30 + 15
-
         for month in range(1, 13):
             month_name = calendar.month_name[month][:3]
             month_y = first_month_y + (month - 1) * (30 + 15 + 5)
