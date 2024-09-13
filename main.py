@@ -170,8 +170,8 @@ def render_calendar(year):
         draw_shape_options(draw, shape_x, shape_y, font_small)
 
         # Adjust these parameters to control spacing
-        weekday_y = 80  # Move the weekdays lower by increasing this value (default was 50)
-        first_month_y = weekday_y + 10  # Adjust this to maintain the spacing between weekdays and month rows (default was 30 + 15)
+        weekday_y = 80  # Move the weekdays lower by increasing this value
+        first_month_y = weekday_y + 40  # Adjust this to maintain the spacing between weekdays and month rows
 
         # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
         january_start_day, _ = calendar.monthrange(year, 1)
@@ -196,11 +196,14 @@ def render_calendar(year):
         # Start drawing months and days staggered according to the start day of the month
         for month in range(1, 13):
             month_name = calendar.month_name[month][:3]
-            month_y = first_month_y + (month - 1) * (30 + 15 + 5)
-            start_day, num_days = calendar.monthrange(year, month)
 
-            # Draw the shortened month name at the start of the row (left side)
-            draw.text((5, month_y + (30 // 4)), month_name, font=font_small, fill=0)
+            # Adjust spacing between month rows
+            month_y = first_month_y + (month - 1) * (30 + 10 + 5)  # Adjust '10' to control spacing between month rows
+
+            # Adjust the position of the month label to align with day numbers
+            draw.text((5, month_y + (30 // 2)), month_name, font=font_small, fill=0)  # Adjust this value to align the month name with the days
+
+            start_day, num_days = calendar.monthrange(year, month)
 
             # Draw days of the month in a single row
             for day in range(1, num_days + 1):
@@ -252,6 +255,7 @@ def render_calendar(year):
         print("Quick refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
+
 
 # Initialize current selected day (for arrow key navigation)
 current_date = datetime.now()
