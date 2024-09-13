@@ -130,10 +130,13 @@ def debounce_refresh():
 
 # Function to render the shapes in a row in the top right corner
 def draw_shape_options(draw, shape_x, shape_y, font_small):
-    # Display shapes in a single row
+    # Adjusted for more spacing between the shapes and moved further to the right
+    shape_spacing = 50  # Spacing between shapes
+
+    # Display shapes in a single row with even spacing
     draw.ellipse([shape_x, shape_y, shape_x + 20, shape_y + 20], fill=0 if current_shape == 1 else None, outline=0)
-    draw.rectangle([shape_x + 30, shape_y, shape_x + 50, shape_y + 20], fill=0 if current_shape == 2 else None, outline=0)
-    draw.polygon([shape_x + 70, shape_y + 20, shape_x + 80, shape_y, shape_x + 90, shape_y + 20], fill=0 if current_shape == 3 else None, outline=0)
+    draw.rectangle([shape_x + shape_spacing, shape_y, shape_x + shape_spacing + 20, shape_y + 20], fill=0 if current_shape == 2 else None, outline=0)
+    draw.polygon([shape_x + 2 * shape_spacing, shape_y + 20, shape_x + 2 * shape_spacing + 10, shape_y, shape_x + 2 * shape_spacing + 20, shape_y + 20], fill=0 if current_shape == 3 else None, outline=0)
 
 # Main function to render the calendar
 def render_calendar(year):
@@ -162,7 +165,7 @@ def render_calendar(year):
         draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
 
         # Draw shape options in a row at the top right
-        shape_x = epd_width - 150
+        shape_x = epd_width - 180  # Moved further right
         shape_y = 20
         draw_shape_options(draw, shape_x, shape_y, font_small)
 
