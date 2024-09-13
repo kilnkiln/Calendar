@@ -20,7 +20,7 @@ def initialize_epaper():
         return None
 
 # Global variables to store the shaded days, selection ring, sleep timer, and sleep state
-shaded_days = set()
+shaded_days = {}  # Store shaded days with their shape type
 selection_ring_visible = False  # Start with the selection ring hidden
 selection_ring_timer_id = None
 refresh_timer_id = None
@@ -28,7 +28,11 @@ sleep_timer_id = None
 display_asleep = False  # Track if the display is asleep
 epd = initialize_epaper()  # Initialize the e-paper display
 
-# Save shaded days to a file
+# Shape types: 1 = circle, 2 = square, 3 = triangle
+current_shape = 1  # Default to circle
+shapes = {1: "Circle", 2: "Square", 3: "Triangle"}
+
+# Save shaded days with shape type to a file
 def save_shaded_days(year):
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
@@ -36,19 +40,19 @@ def save_shaded_days(year):
     file_path = os.path.join(DATA_DIR, f'{year}.txt')
 
     with open(file_path, 'w') as file:
-        for month, day in sorted(shaded_days):
-            file.write(f'{month},{day}\n')
+        for (month, day), shape in sorted(shaded_days.items()):
+            file.write(f'{month},{day},{shape}\n')
     print(f"Shaded days saved to {file_path}")
 
-# Load shaded days from a file
+# Load shaded days with shape type from a file
 def load_shaded_days(year):
     file_path = os.path.join(DATA_DIR, f'{year}.txt')
 
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
-                month, day = map(int, line.strip().split(','))
-                shaded_days.add((month, day))
+                month, day, shape = map(int, line.strip().split(','))
+                shaded_days[(month, day)] = shape
         print(f"Shaded days loaded from {file_path}")
     else:
         print(f"No file found for {year}. Creating new file...")
@@ -117,6 +121,16 @@ def debounce_refresh():
     # Set a new timer to refresh after 1 second
     refresh_timer_id = root.after(1000, lambda: render_calendar(current_year))
 
+# Function to render the shapes in the top right corner
+def draw_shape_options(draw, shape_x, shape_y):
+    # Draw shape options in the top right corner
+    draw.text((shape_x, shape_y), "1", font=font_small, fill=0)
+    draw.ellipse([shape_x + 20, shape_y, shape_x + 40, shape_y + 20], fill=0 if current_shape == 1 else None, outline=0)
+    draw.text((shape_x, shape_y + 30), "2", font=font_small, fill=0)
+    draw.rectangle([shape_x + 20, shape_y + 30, shape_x + 40, shape_y + 50], fill=0 if current_shape == 2 else None, outline=0)
+    draw.text((shape_x, shape_y + 60), "3", font=font_small, fill=0)
+    draw.polygon([shape_x + 20, shape_y + 80, shape_x + 30, shape_y + 60, shape_x + 40, shape_y + 80], fill=0 if current_shape == 3 else None, outline=0)
+
 # Main function to render the calendar
 def render_calendar(year):
     global current_month_index, current_day_index, global_image, current_date
@@ -142,6 +156,11 @@ def render_calendar(year):
 
         # Draw the year header at the top
         draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
+
+        # Draw shape options at the top right
+        shape_x = epd_width - 100
+        shape_y = 20
+        draw_shape_options(draw, shape_x, shape_y)
 
         # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
         january_start_day, _ = calendar.monthrange(year, 1)
@@ -198,9 +217,15 @@ def render_calendar(year):
                                   circle_y + circle_diameter + ring_padding], 
                                   outline=0, width=2)
 
-                # Draw a shaded circle if the day is shaded
-                if (month, day) in shaded_days:
-                    draw.ellipse([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
+                # Draw a shaded shape if the day is shaded and the current shape matches
+                if (month, day) in shaded_days and shaded_days[(month, day)] == current_shape:
+                    if current_shape == 1:  # Circle
+                        draw.ellipse([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
+                    elif current_shape == 2:  # Square
+                        draw.rectangle([circle_x, circle_y, circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
+                    elif current_shape == 3:  # Triangle
+                        draw.polygon([circle_x, circle_y + circle_diameter, circle_x + circle_diameter / 2, circle_y,
+                                      circle_x + circle_diameter, circle_y + circle_diameter], fill=0)
 
                 # Draw the day number
                 draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
@@ -249,7 +274,7 @@ def move_selection(direction):
     # Debounce the refresh (wait 1 second before refreshing)
     debounce_refresh()
 
-# Example function to shade/unshade a day and refresh the display
+# Example function to shade/unshade a day with the current shape and refresh the display
 def shade_day():
     global shaded_days
 
@@ -257,11 +282,11 @@ def shade_day():
 
     current_day = (current_month_index + 1, current_day_index + 1)
 
-    # Toggle shading on the current day
-    if current_day in shaded_days:
-        shaded_days.remove(current_day)
+    # Toggle shading on the current day with the current shape
+    if current_day in shaded_days and shaded_days[current_day] == current_shape:
+        del shaded_days[current_day]
     else:
-        shaded_days.add(current_day)
+        shaded_days[current_day] = current_shape
 
     # Save the shaded days after any change
     save_shaded_days(current_year)
@@ -271,6 +296,13 @@ def shade_day():
 
     # Debounce the refresh (wait 1 second before refreshing)
     debounce_refresh()
+
+# Function to change the current shape
+def change_shape(shape):
+    global current_shape
+    current_shape = shape
+    print(f"Shape changed to {shapes[shape]}")
+    debounce_refresh()  # Refresh the display when the shape is changed
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
@@ -287,6 +319,11 @@ render_calendar(current_year)
 root.bind('<Right>', lambda event: move_selection("right"))
 root.bind('<Left>', lambda event: move_selection("left"))
 root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
+
+# Bind keys to shape selection (1 for Circle, 2 for Square, 3 for Triangle)
+root.bind('1', lambda event: change_shape(1))
+root.bind('2', lambda event: change_shape(2))
+root.bind('3', lambda event: change_shape(3))
 
 # Start the Tkinter event loop
 reset_timers()  # Start the selection ring and sleep timers
