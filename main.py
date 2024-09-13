@@ -171,7 +171,7 @@ def render_calendar(year):
 
         # Adjust these parameters to control spacing
         weekday_y = 80  # Move the weekdays lower by increasing this value (default was 50)
-        first_month_y = weekday_y + 40  # Adjust this to maintain the spacing between weekdays and month rows (default was 30 + 15)
+        first_month_y = weekday_y + 10  # Adjust this to maintain the spacing between weekdays and month rows (default was 30 + 15)
 
         # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
         january_start_day, _ = calendar.monthrange(year, 1)
