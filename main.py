@@ -44,14 +44,21 @@ def save_shaded_days(year):
             file.write(f'{month},{day},{shape}\n')
     print(f"Shaded days saved to {file_path}")
 
-# Load shaded days with shape type from a file
+# Updated function to load shaded days with shape type from a file
 def load_shaded_days(year):
     file_path = os.path.join(DATA_DIR, f'{year}.txt')
 
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             for line in file:
-                month, day, shape = map(int, line.strip().split(','))
+                values = line.strip().split(',')
+                if len(values) == 3:  # New format with month, day, and shape
+                    month, day, shape = map(int, values)
+                elif len(values) == 2:  # Old format with just month and day, default to circle (1)
+                    month, day = map(int, values)
+                    shape = 1  # Default to circle
+                else:
+                    continue  # Skip lines that don't match the expected format
                 shaded_days[(month, day)] = shape
         print(f"Shaded days loaded from {file_path}")
     else:
@@ -122,7 +129,7 @@ def debounce_refresh():
     refresh_timer_id = root.after(1000, lambda: render_calendar(current_year))
 
 # Function to render the shapes in the top right corner
-def draw_shape_options(draw, shape_x, shape_y):
+def draw_shape_options(draw, shape_x, shape_y, font_small):
     # Draw shape options in the top right corner
     draw.text((shape_x, shape_y), "1", font=font_small, fill=0)
     draw.ellipse([shape_x + 20, shape_y, shape_x + 40, shape_y + 20], fill=0 if current_shape == 1 else None, outline=0)
@@ -160,7 +167,7 @@ def render_calendar(year):
         # Draw shape options at the top right
         shape_x = epd_width - 100
         shape_y = 20
-        draw_shape_options(draw, shape_x, shape_y)
+        draw_shape_options(draw, shape_x, shape_y, font_small)
 
         # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
         january_start_day, _ = calendar.monthrange(year, 1)
