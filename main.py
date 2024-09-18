@@ -325,6 +325,17 @@ def change_shape(shape):
     print(f"Shape changed to {shapes[shape]}")
     debounce_refresh()  # Refresh the display when the shape is changed
 
+# Function to handle the 'C' key press to toggle between calendar and plot
+def toggle_plot():
+    global view_mode
+    if view_mode == 'calendar':
+        plots.plot_year_data(current_year, current_shape)  # Show the plot for the current shape and year
+        view_mode = 'plot'
+    else:
+        plots.close_plot()  # Close the plot if it is currently active
+        display_calendar()  # Return to calendar view
+        view_mode = 'calendar'
+
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
 
@@ -340,6 +351,8 @@ render_calendar(current_year)
 root.bind('<Right>', lambda event: move_selection("right"))
 root.bind('<Left>', lambda event: move_selection("left"))
 root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
+root.bind('c', lambda event: toggle_plot())  # Toggle between calendar and plot
+
 
 # Bind keys to shape selection (1 for Circle, 2 for Square, 3 for Triangle)
 root.bind('1', lambda event: change_shape(1))
