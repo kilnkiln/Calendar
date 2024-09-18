@@ -350,12 +350,13 @@ def change_shape(shape):
 def toggle_plot():
     global view_mode
     if view_mode == 'calendar':
-        plots.plot_year_data(epd, current_year, current_shape)  # Show the plot for the current shape and year
+        plots.plot_year_data(epd, current_year, current_shape)  # Pass epd as an argument
         view_mode = 'plot'
     else:
-        plots.close_plot()  # Close the plot if it is currently active
+        plots.close_plot(epd)  # Pass epd as an argument
         render_calendar(current_year)  # Return to calendar view
         view_mode = 'calendar'
+
 
 # Tkinter Setup for Key Bindings
 root = tk.Tk()
