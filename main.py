@@ -310,7 +310,7 @@ def change_year(delta):
     if view_mode == 'calendar':
         render_calendar(current_year)
     else:
-        plots.plot_year_data(current_year, current_shape)  # Update the plot with the new year
+        plots.plot_year_data(epd,current_year, current_shape)  # Update the plot with the new year
 
 # Example function to shade/unshade a day with the current shape and refresh the display
 def shade_day():
@@ -344,13 +344,13 @@ def change_shape(shape):
         debounce_refresh()  # Refresh the display when the shape is changed
     else:
         # Update the plot with the new shape
-        plots.plot_year_data(current_year, current_shape)
+        plots.plot_year_data(epd, current_year, current_shape)
 
 # Function to handle the 'C' key press to toggle between calendar and plot
 def toggle_plot():
     global view_mode
     if view_mode == 'calendar':
-        plots.plot_year_data(current_year, current_shape)  # Show the plot for the current shape and year
+        plots.plot_year_data(epd, current_year, current_shape)  # Show the plot for the current shape and year
         view_mode = 'plot'
     else:
         plots.close_plot()  # Close the plot if it is currently active
