@@ -41,7 +41,7 @@ def read_shaded_days(year, shape):
                 continue  # Skip lines that don't have enough data
     return shaded_days
 
-# Function to generate the plot as a bitmap image and display it on the e-paper
+# Function to generate the plot as a PNG image and display it on the e-paper
 def plot_year_data(year, shape):
     global plot_active, epd, shapes  # Ensure shapes is in scope
 
@@ -88,9 +88,9 @@ def plot_year_data(year, shape):
     # Remove extra whitespace
     plt.tight_layout()
 
-    # Save the plot as a .bmp image to display on the e-paper
-    plot_file = '/tmp/plot.bmp'
-    fig.savefig(plot_file, format='bmp', facecolor='white')
+    # Save the plot as a .png image to display on the e-paper
+    plot_file = '/tmp/plot.png'
+    fig.savefig(plot_file, format='png', facecolor='white')
     plt.close(fig)  # Close the figure after saving to avoid display pop-up
 
     # Load the image and display on the e-paper
