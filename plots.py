@@ -58,8 +58,21 @@ def plot_year_data(epd, year, shape):
     fig.patch.set_facecolor('white')
     ax.set_facecolor('white')  # Ensure background is white
 
+    # Adjust the plot area to leave room at the top
+    plt.subplots_adjust(top=0.85)  # Leave space at the top for the title and shapes
+
+    # Set title
+    fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
+
+    # Draw shapes above the plot area, inline with the title
+    draw_shape_options(fig, shape)
+
     # Plot the data as a line plot
     ax.plot(months, days_count, color='black', marker='o')
+
+    # Add data labels above each point
+    for x, y in zip(months, days_count):
+        ax.text(x, y + 0.5, str(y), ha='center', va='bottom', fontsize=12)
 
     # Set x-axis to months with abbreviations
     ax.set_xticks(months)
@@ -69,28 +82,16 @@ def plot_year_data(epd, year, shape):
     ax.set_ylim(1, 31)
     ax.set_yticks(range(1, 32))
 
+    # Adjust y-axis label font size
+    ax.tick_params(axis='y', which='major', labelsize=12)
+    ax.tick_params(axis='x', which='major', labelsize=16)
+
     # Remove axis labels
     ax.set_xlabel('')
     ax.set_ylabel('')
 
-    # Remove axis tick labels if desired (uncomment to remove)
-    # ax.set_xticklabels([])
-    # ax.set_yticklabels([])
-
-    # Adjust y-axis to show integer ticks only (this line is optional since we set y-ticks explicitly)
-    # ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # Set title
-    ax.set_title(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black')
-
-    # Adjust font sizes for better readability
-    ax.tick_params(axis='both', which='major', labelsize=16)
-
     # Remove extra whitespace
     plt.tight_layout()
-
-    # Draw shapes in the top-right corner
-    draw_shape_options(ax, shape)
 
     # Save the plot as a .png image to display on the e-paper
     plot_file = '/tmp/plot.png'
@@ -101,31 +102,32 @@ def plot_year_data(epd, year, shape):
     display_plot_on_epaper(epd, plot_file)
     plot_active = True  # Mark plot as active
 
-# Function to draw the shapes in the top-right corner and highlight the selected one
-def draw_shape_options(ax, current_shape):
-    # Define positions and sizes in axes coordinates
-    shape_positions = [(0.85, 0.9), (0.90, 0.9), (0.95, 0.9)]  # Adjust positions as needed
-    shape_size = 0.03  # Size in axes coordinates
+# Function to draw the shapes above the plot area and correct dimensions
+def draw_shape_options(fig, current_shape):
+    # Define positions and sizes in figure coordinates (0 to 1)
+    shape_positions = [0.75, 0.80, 0.85]  # Positions along x-axis
+    y = 0.95  # Vertical position in figure coordinates
+    shape_size = 0.02  # Size in figure coordinates
 
-    for i, (x, y) in enumerate(shape_positions):
+    for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
         if shape_type == 1:
-            shape = Circle((x, y), shape_size / 2, transform=ax.transAxes,
-                           fill=(current_shape == 1), edgecolor='black',
+            shape = Circle((x, y), shape_size / 2, transform=fig.transFigure,
+                           fill=(current_shape == 1), edgecolor='black', linewidth=1,
                            facecolor='black' if current_shape == 1 else 'white')
         elif shape_type == 2:
             shape = Rectangle((x - shape_size / 2, y - shape_size / 2),
-                              shape_size, shape_size, transform=ax.transAxes,
-                              fill=(current_shape == 2), edgecolor='black',
+                              shape_size, shape_size, transform=fig.transFigure,
+                              fill=(current_shape == 2), edgecolor='black', linewidth=1,
                               facecolor='black' if current_shape == 2 else 'white')
         elif shape_type == 3:
             triangle = [[x, y + shape_size / 2],
                         [x - shape_size / 2, y - shape_size / 2],
                         [x + shape_size / 2, y - shape_size / 2]]
-            shape = Polygon(triangle, transform=ax.transAxes,
-                            fill=(current_shape == 3), edgecolor='black',
+            shape = Polygon(triangle, transform=fig.transFigure,
+                            fill=(current_shape == 3), edgecolor='black', linewidth=1,
                             facecolor='black' if current_shape == 3 else 'white')
-        ax.add_patch(shape)
+        fig.patches.append(shape)
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
