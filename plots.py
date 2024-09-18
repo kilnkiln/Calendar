@@ -4,6 +4,7 @@ import calendar
 from PIL import Image
 from waveshare_epd import epd13in3k  # Import Waveshare e-paper library
 from matplotlib.patches import Circle, Rectangle, Polygon
+from matplotlib.ticker import MaxNLocator  # Import MaxNLocator if needed
 
 # Remove the epd initialization from plots.py
 # We'll pass the epd object from main.py
@@ -62,7 +63,7 @@ def plot_year_data(epd, year, shape):
 
     # Set x-axis to months with abbreviations
     ax.set_xticks(months)
-    ax.set_xticklabels([calendar.month_abbr[m] for m in months])
+    ax.set_xticklabels([calendar.month_abbr[m] for m in months], fontsize=16)
 
     # Set y-axis from 1 to 31
     ax.set_ylim(1, 31)
@@ -72,12 +73,12 @@ def plot_year_data(epd, year, shape):
     ax.set_xlabel('')
     ax.set_ylabel('')
 
-    # Remove axis tick labels if desired
+    # Remove axis tick labels if desired (uncomment to remove)
     # ax.set_xticklabels([])
     # ax.set_yticklabels([])
 
-    # Ensure y-axis shows whole numbers only
-    ax.yaxis.get_major_locator().set_params(integer=True)
+    # Adjust y-axis to show integer ticks only (this line is optional since we set y-ticks explicitly)
+    # ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Set title
     ax.set_title(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black')
@@ -103,13 +104,13 @@ def plot_year_data(epd, year, shape):
 # Function to draw the shapes in the top-right corner and highlight the selected one
 def draw_shape_options(ax, current_shape):
     # Define positions and sizes in axes coordinates
-    shape_positions = [(0.8, 0.9), (0.85, 0.9), (0.9, 0.9)]  # Adjust positions as needed
+    shape_positions = [(0.85, 0.9), (0.90, 0.9), (0.95, 0.9)]  # Adjust positions as needed
     shape_size = 0.03  # Size in axes coordinates
 
     for i, (x, y) in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
         if shape_type == 1:
-            shape = Circle((x, y), shape_size, transform=ax.transAxes,
+            shape = Circle((x, y), shape_size / 2, transform=ax.transAxes,
                            fill=(current_shape == 1), edgecolor='black',
                            facecolor='black' if current_shape == 1 else 'white')
         elif shape_type == 2:
