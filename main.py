@@ -4,6 +4,7 @@ from waveshare_epd import epd13in3k
 from PIL import Image, ImageDraw, ImageFont
 import calendar
 from datetime import datetime
+import plots  # Import the plots module
 
 # Directory to store the calendar data
 DATA_DIR = '/home/admin/CalendarDatabase'
@@ -32,6 +33,9 @@ epd = initialize_epaper()  # Initialize the e-paper display
 current_shape = 1  # Default to circle
 shapes = {1: "Circle", 2: "Square", 3: "Triangle"}
 
+# View mode: 'calendar' or 'plot'
+view_mode = 'calendar'
+
 # Save shaded days with shape type to a file
 def save_shaded_days(year):
     if not os.path.exists(DATA_DIR):
@@ -46,7 +50,10 @@ def save_shaded_days(year):
 
 # Updated function to load shaded days with shape type from a file
 def load_shaded_days(year):
+    global shaded_days  # Add this line to modify the global shaded_days
     file_path = os.path.join(DATA_DIR, f'{year}.txt')
+
+    shaded_days.clear()  # Clear previous year's data
 
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
@@ -214,7 +221,7 @@ def render_calendar(year):
                 bbox = draw.textbbox((0, 0), str(day).zfill(2), font=font_small)
                 text_width = bbox[2] - bbox[0]
                 text_height = bbox[3] - bbox[1]
-                
+
                 text_x = day_x + (day_width - text_width) // 2  # Center horizontally
                 text_y = day_y + (30 - text_height) // 2  # Center vertically
 
@@ -256,7 +263,6 @@ def render_calendar(year):
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
-
 # Initialize current selected day (for arrow key navigation)
 current_date = datetime.now()
 current_year = current_date.year
@@ -295,6 +301,17 @@ def move_selection(direction):
     # Debounce the refresh (wait 1 second before refreshing)
     debounce_refresh()
 
+# Function to change the calendar year
+def change_year(delta):
+    global current_year, current_date
+    current_year += delta
+    current_date = current_date.replace(year=current_year)
+    load_shaded_days(current_year)
+    if view_mode == 'calendar':
+        render_calendar(current_year)
+    else:
+        plots.plot_year_data(current_year, current_shape)  # Update the plot with the new year
+
 # Example function to shade/unshade a day with the current shape and refresh the display
 def shade_day():
     global shaded_days
@@ -323,7 +340,11 @@ def change_shape(shape):
     global current_shape
     current_shape = shape
     print(f"Shape changed to {shapes[shape]}")
-    debounce_refresh()  # Refresh the display when the shape is changed
+    if view_mode == 'calendar':
+        debounce_refresh()  # Refresh the display when the shape is changed
+    else:
+        # Update the plot with the new shape
+        plots.plot_year_data(current_year, current_shape)
 
 # Function to handle the 'C' key press to toggle between calendar and plot
 def toggle_plot():
@@ -333,7 +354,7 @@ def toggle_plot():
         view_mode = 'plot'
     else:
         plots.close_plot()  # Close the plot if it is currently active
-        display_calendar()  # Return to calendar view
+        render_calendar(current_year)  # Return to calendar view
         view_mode = 'calendar'
 
 # Tkinter Setup for Key Bindings
@@ -353,11 +374,14 @@ root.bind('<Left>', lambda event: move_selection("left"))
 root.bind('<space>', lambda event: shade_day())  # Spacebar to shade/unshade
 root.bind('c', lambda event: toggle_plot())  # Toggle between calendar and plot
 
-
 # Bind keys to shape selection (1 for Circle, 2 for Square, 3 for Triangle)
 root.bind('1', lambda event: change_shape(1))
 root.bind('2', lambda event: change_shape(2))
 root.bind('3', lambda event: change_shape(3))
+
+# Bind keys to change the year using 'a' and 'd'
+root.bind('a', lambda event: change_year(-1))  # Press 'a' to go to the previous year
+root.bind('d', lambda event: change_year(1))   # Press 'd' to go to the next year
 
 # Start the Tkinter event loop
 reset_timers()  # Start the selection ring and sleep timers
