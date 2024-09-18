@@ -2,9 +2,11 @@ import matplotlib.pyplot as plt
 import os
 import calendar
 from PIL import Image
+from waveshare_epd import epd13in3k  # Import Waveshare e-paper library
+from matplotlib.patches import Circle, Rectangle, Polygon
 
 # Remove the epd initialization from plots.py
-# epd = initialize_epaper()  # Remove this line
+# We'll pass the epd object from main.py
 plot_active = False  # Track whether the plot is active
 
 # Shapes dictionary (must be consistent with main.py)
@@ -18,14 +20,16 @@ def read_shaded_days(year, shape):
         print(f"No data for {year}.")
         return {}
     
-    shaded_days = {month: 0 for month in range(1, 13)}  # Initialize month counts to zero
+    shaded_days = {}
     with open(file_path, 'r') as file:
         for line in file:
             values = line.strip().split(',')
             if len(values) >= 3:
                 month, day, shape_type = map(int, values[:3])
                 if shape_type == shape:
-                    shaded_days[month] += 1  # Count the days shaded for the current shape
+                    if month not in shaded_days:
+                        shaded_days[month] = []
+                    shaded_days[month].append(day)
             else:
                 continue  # Skip lines that don't have enough data
     return shaded_days
@@ -37,13 +41,12 @@ def plot_year_data(epd, year, shape):
     shaded_days = read_shaded_days(year, shape)
     if not shaded_days:
         print("No shaded days found for the selected shape.")
-        # Clear the e-paper display if there's no data
-        epd.Clear()
+        # Skip clearing the e-paper display
         return
 
-    # Plot the data
-    months = [calendar.month_abbr[m] for m in shaded_days.keys()]
-    days_count = list(shaded_days.values())
+    # Prepare data for plotting
+    months = list(range(1, 13))
+    days_count = [len(shaded_days.get(month, [])) for month in months]
 
     # Adjust the figure size and DPI to match e-paper resolution (960x680)
     dpi = 100  # Adjust DPI if necessary
@@ -52,20 +55,41 @@ def plot_year_data(epd, year, shape):
 
     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
     fig.patch.set_facecolor('white')
-    ax.bar(months, days_count, color='black')  # Use black color for e-paper
-    ax.set_xlabel('Month')
-    ax.set_ylabel('Number of Days Shaded')
-    ax.set_title(f'{shapes[shape]} Shaded Days in {year}')
     ax.set_facecolor('white')  # Ensure background is white
 
-    # Adjust font sizes for better readability on the e-paper display
-    ax.title.set_fontsize(24)
-    ax.xaxis.label.set_fontsize(20)
-    ax.yaxis.label.set_fontsize(20)
+    # Plot the data as a line plot
+    ax.plot(months, days_count, color='black', marker='o')
+
+    # Set x-axis to months with abbreviations
+    ax.set_xticks(months)
+    ax.set_xticklabels([calendar.month_abbr[m] for m in months])
+
+    # Set y-axis from 1 to 31
+    ax.set_ylim(1, 31)
+    ax.set_yticks(range(1, 32))
+
+    # Remove axis labels
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+
+    # Remove axis tick labels if desired
+    # ax.set_xticklabels([])
+    # ax.set_yticklabels([])
+
+    # Ensure y-axis shows whole numbers only
+    ax.yaxis.get_major_locator().set_params(integer=True)
+
+    # Set title
+    ax.set_title(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black')
+
+    # Adjust font sizes for better readability
     ax.tick_params(axis='both', which='major', labelsize=16)
 
     # Remove extra whitespace
     plt.tight_layout()
+
+    # Draw shapes in the top-right corner
+    draw_shape_options(ax, shape)
 
     # Save the plot as a .png image to display on the e-paper
     plot_file = '/tmp/plot.png'
@@ -75,6 +99,32 @@ def plot_year_data(epd, year, shape):
     # Load the image and display on the e-paper
     display_plot_on_epaper(epd, plot_file)
     plot_active = True  # Mark plot as active
+
+# Function to draw the shapes in the top-right corner and highlight the selected one
+def draw_shape_options(ax, current_shape):
+    # Define positions and sizes in axes coordinates
+    shape_positions = [(0.8, 0.9), (0.85, 0.9), (0.9, 0.9)]  # Adjust positions as needed
+    shape_size = 0.03  # Size in axes coordinates
+
+    for i, (x, y) in enumerate(shape_positions):
+        shape_type = i + 1  # Shape IDs start from 1
+        if shape_type == 1:
+            shape = Circle((x, y), shape_size, transform=ax.transAxes,
+                           fill=(current_shape == 1), edgecolor='black',
+                           facecolor='black' if current_shape == 1 else 'white')
+        elif shape_type == 2:
+            shape = Rectangle((x - shape_size / 2, y - shape_size / 2),
+                              shape_size, shape_size, transform=ax.transAxes,
+                              fill=(current_shape == 2), edgecolor='black',
+                              facecolor='black' if current_shape == 2 else 'white')
+        elif shape_type == 3:
+            triangle = [[x, y + shape_size / 2],
+                        [x - shape_size / 2, y - shape_size / 2],
+                        [x + shape_size / 2, y - shape_size / 2]]
+            shape = Polygon(triangle, transform=ax.transAxes,
+                            fill=(current_shape == 3), edgecolor='black',
+                            facecolor='black' if current_shape == 3 else 'white')
+        ax.add_patch(shape)
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
@@ -88,20 +138,16 @@ def display_plot_on_epaper(epd, image_path):
         epd_height = epd.height
         image = image.resize((epd_width, epd_height), Image.ANTIALIAS)
         epd.display(epd.getbuffer(image))  # Send the image buffer to the display
-        # Do not put the e-paper display to sleep here
         print("Plot displayed on the e-paper.")
     except Exception as e:
         print(f"Error displaying plot on e-paper: {e}")
 
-# Function to close the plot and clear the e-paper display
+# Function to close the plot (no need to clear the e-paper display)
 def close_plot(epd):
     global plot_active
     try:
-        epd.init()
-        epd.Clear()  # Clear the e-paper screen to remove the plot
-        # Do not put the e-paper display to sleep here
         plot_active = False
-        print("Plot closed and e-paper display cleared.")
+        print("Plot closed.")
     except Exception as e:
-        print(f"Error closing plot on e-paper: {e}")
+        print(f"Error closing plot: {e}")
         plot_active = False
