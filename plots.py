@@ -6,7 +6,6 @@ from waveshare_epd import epd13in3k  # Import Waveshare e-paper library
 from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.ticker import MaxNLocator  # Import MaxNLocator if needed
 
-# Remove the epd initialization from plots.py
 # We'll pass the epd object from main.py
 plot_active = False  # Track whether the plot is active
 
@@ -62,11 +61,10 @@ def plot_year_data(epd, year, shape):
     plt.subplots_adjust(top=0.85)  # Leave space at the top for the title and shapes
 
     # Set title
-    #fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
-    fig.suptitle(f'{year}', fontsize=18, color='black', y=0.96)
+    fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
 
     # Draw shapes above the plot area, inline with the title
-    draw_shape_options(ax, shape)
+    draw_shape_options(fig, shape)
 
     # Plot the data as a line plot
     ax.plot(months, days_count, color='black', marker='o')
@@ -103,15 +101,17 @@ def plot_year_data(epd, year, shape):
     display_plot_on_epaper(epd, plot_file)
     plot_active = True  # Mark plot as active
 
-# Function to draw the shapes above the plot area with independent x and y dimensions
+# Function to draw the shapes above the plot area using fig.transFigure
 def draw_shape_options(fig, current_shape):
     # Define positions and sizes in figure coordinates (0 to 1)
     shape_positions = [0.75, 0.80, 0.85]  # Positions along x-axis
-    y = 0.95  # Vertical position in igure coordinates
+    y = 0.95  # Vertical position in figure coordinates
 
     # Adjust the shape sizes independently to correct the aspect ratio
-    shape_size_x = 0.018  # Size in igure coordinates along x
-    shape_size_y = shape_size_x * (ax.get_figure().get_figwidth() / ax.get_figure().get_figheight()) * 1.2  # Adjust multiplier as needed
+    shape_size_x = 0.02  # Width in figure coordinates
+    # Calculate the aspect ratio correction factor
+    aspect_ratio = fig.get_figheight() / fig.get_figwidth()
+    shape_size_y = shape_size_x * aspect_ratio * 1.5  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
@@ -135,7 +135,7 @@ def draw_shape_options(fig, current_shape):
             shape = Polygon(triangle, transform=fig.transFigure,
                             fill=(current_shape == 3), edgecolor='black', linewidth=1,
                             facecolor='black' if current_shape == 3 else 'white')
-        fig.add_patch(shape)
+        fig.patches.append(shape)
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
