@@ -62,7 +62,8 @@ def plot_year_data(epd, year, shape):
     plt.subplots_adjust(top=0.85)  # Leave space at the top for the title and shapes
 
     # Set title
-    fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
+    #fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
+    fig.suptitle(f'{year}', fontsize=24, color='black', y=0.96)
 
     # Draw shapes above the plot area, inline with the title
     draw_shape_options(fig, shape)
