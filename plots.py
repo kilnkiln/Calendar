@@ -143,7 +143,7 @@ def draw_shape_options(fig, current_shape):
 def display_plot_on_epaper(epd, image_path):
     global first_plot
     try:
-        epd.init()  # Initialize the e-paper display
+        #epd.init()  # Initialize the e-paper display
 
         if first_plot:
             epd.Clear()  # Clear the display only on the first plot
