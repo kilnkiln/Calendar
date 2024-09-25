@@ -152,8 +152,8 @@ def display_plot_on_epaper(epd, image_path):
         # Use partial update if supported
         # For Waveshare displays, you may need to use epd.displayPartial()
         # Check if the method is available
-        if hasattr(epd, 'displayPartial'):
-            epd.displayPartial(epd.getbuffer(image))
+        if hasattr(epd, 'display_Partial'):
+            epd.display_Partial(epd.getbuffer(image))
             print("Plot displayed on the e-paper using partial update.")
         else:
             epd.display(epd.getbuffer(image))
