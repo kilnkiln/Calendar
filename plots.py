@@ -104,13 +104,13 @@ def plot_year_data(epd, year, shape):
     plot_active = True  # Mark plot as active
 
 # Function to draw the shapes above the plot area with independent x and y dimensions
-def draw_shape_options(ax, current_shape):
-    # Define positions and sizes in axes coordinates (0 to 1)
+def draw_shape_options(fig, current_shape):
+    # Define positions and sizes in figure coordinates (0 to 1)
     shape_positions = [0.75, 0.80, 0.85]  # Positions along x-axis
-    y = 0.95  # Vertical position in axes coordinates
+    y = 0.95  # Vertical position in igure coordinates
 
     # Adjust the shape sizes independently to correct the aspect ratio
-    shape_size_x = 0.018  # Size in axes coordinates along x
+    shape_size_x = 0.018  # Size in igure coordinates along x
     shape_size_y = shape_size_x * (ax.get_figure().get_figwidth() / ax.get_figure().get_figheight()) * 1.2  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
@@ -135,7 +135,7 @@ def draw_shape_options(ax, current_shape):
             shape = Polygon(triangle, transform=fig.transFigure,
                             fill=(current_shape == 3), edgecolor='black', linewidth=1,
                             facecolor='black' if current_shape == 3 else 'white')
-        ax.add_patch(shape)
+        fig.add_patch(shape)
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
