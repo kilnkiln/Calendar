@@ -8,6 +8,7 @@ from matplotlib.ticker import MaxNLocator  # Import MaxNLocator if needed
 
 # We'll pass the epd object from main.py
 plot_active = False  # Track whether the plot is active
+first_plot = True    # Track whether it's the first time displaying the plot
 
 # Shapes dictionary (must be consistent with main.py)
 shapes = {1: "Circle", 2: "Square", 3: "Triangle"}
@@ -36,7 +37,7 @@ def read_shaded_days(year, shape):
 
 # Function to generate the plot as a PNG image and display it on the e-paper
 def plot_year_data(epd, year, shape):
-    global plot_active, shapes  # Ensure shapes is in scope
+    global plot_active, shapes, first_plot  # Ensure variables are in scope
 
     shaded_days = read_shaded_days(year, shape)
     if not shaded_days:
@@ -99,19 +100,20 @@ def plot_year_data(epd, year, shape):
 
     # Load the image and display on the e-paper
     display_plot_on_epaper(epd, plot_file)
-    plot_active = True  # Mark plot as active
+    plot_active = True    # Mark plot as active
+    first_plot = False    # Subsequent calls are not the first plot
 
 # Function to draw the shapes above the plot area using fig.transFigure
 def draw_shape_options(fig, current_shape):
     # Define positions and sizes in figure coordinates (0 to 1)
-    shape_positions = [0.80, 0.85, 0.90]  # Positions along x-axis
+    shape_positions = [0.75, 0.80, 0.85]  # Positions along x-axis
     y = 0.95  # Vertical position in figure coordinates
 
     # Adjust the shape sizes independently to correct the aspect ratio
     shape_size_x = 0.02  # Width in figure coordinates
     # Calculate the aspect ratio correction factor
     aspect_ratio = fig.get_figheight() / fig.get_figwidth()
-    shape_size_y = shape_size_x * aspect_ratio * 2  # Adjust multiplier as needed
+    shape_size_y = shape_size_x * aspect_ratio * 1.5  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
@@ -139,26 +141,38 @@ def draw_shape_options(fig, current_shape):
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
+    global first_plot
     try:
-        epd.init()  # Initialize the e-paper
+        epd.init()  # Initialize the e-paper display
+
+        if first_plot:
+            epd.Clear()  # Clear the display only on the first plot
+            print("E-paper display initialized and cleared for the first plot.")
+        else:
+            print("E-paper display initialized for plot update.")
+
         # Ensure the image matches the e-paper's dimensions
         image = Image.open(image_path)
         image = image.convert('1')  # Convert image to 1-bit color
+
         # Resize the image to fit the e-paper display if necessary
         epd_width = epd.width
         epd_height = epd.height
         image = image.resize((epd_width, epd_height), Image.ANTIALIAS)
+
         epd.display(epd.getbuffer(image))  # Send the image buffer to the display
         print("Plot displayed on the e-paper.")
     except Exception as e:
         print(f"Error displaying plot on e-paper: {e}")
 
-# Function to close the plot (no need to clear the e-paper display)
+# Function to close the plot
 def close_plot(epd):
-    global plot_active
+    global plot_active, first_plot
     try:
         plot_active = False
+        first_plot = True  # Reset first_plot flag for next time
         print("Plot closed.")
     except Exception as e:
         print(f"Error closing plot: {e}")
         plot_active = False
+        first_plot = True  # Ensure flag is reset even on error
