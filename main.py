@@ -114,7 +114,7 @@ def reset_timers():
     # Reset the timer for sleeping the e-paper display
     if sleep_timer_id:
         root.after_cancel(sleep_timer_id)
-    sleep_timer_id = root.after(30000, sleep_epaper)  # 30 seconds for sleep
+    sleep_timer_id = root.after(500000, sleep_epaper)  # 30 seconds for sleep
 
 # Perform a quick refresh for the calendar display
 def quick_refresh():
