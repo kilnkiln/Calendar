@@ -2,13 +2,11 @@ import matplotlib.pyplot as plt
 import os
 import calendar
 from PIL import Image
-from waveshare_epd import epd13in3k  # Import Waveshare e-paper library
 from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.ticker import MaxNLocator  # Import MaxNLocator if needed
 
 # We'll pass the epd object from main.py
 plot_active = False  # Track whether the plot is active
-first_plot = True    # Track whether it's the first time displaying the plot
 
 # Shapes dictionary (must be consistent with main.py)
 shapes = {1: "Circle", 2: "Square", 3: "Triangle"}
@@ -37,12 +35,12 @@ def read_shaded_days(year, shape):
 
 # Function to generate the plot as a PNG image and display it on the e-paper
 def plot_year_data(epd, year, shape):
-    global plot_active, shapes, first_plot  # Ensure variables are in scope
+    global plot_active, shapes  # Ensure variables are in scope
 
     shaded_days = read_shaded_days(year, shape)
     if not shaded_days:
         print("No shaded days found for the selected shape.")
-        # Skip clearing the e-paper display
+        # Optionally, display a message or handle no data case
         return
 
     # Prepare data for plotting
@@ -101,7 +99,6 @@ def plot_year_data(epd, year, shape):
     # Load the image and display on the e-paper
     display_plot_on_epaper(epd, plot_file)
     plot_active = True    # Mark plot as active
-    first_plot = False    # Subsequent calls are not the first plot
 
 # Function to draw the shapes above the plot area using fig.transFigure
 def draw_shape_options(fig, current_shape):
@@ -121,13 +118,13 @@ def draw_shape_options(fig, current_shape):
             # For Circle, use the minimum of shape_size_x and shape_size_y
             radius = min(shape_size_x, shape_size_y) / 2
             shape = Circle((x, y), radius, transform=fig.transFigure,
-                           fill=(current_shape == 1), edgecolor='black', linewidth=1,
-                           facecolor='black' if current_shape == 1 else 'white')
+                           fill=(current_shape == shape_type), edgecolor='black', linewidth=1,
+                           facecolor='black' if current_shape == shape_type else 'white')
         elif shape_type == 2:
             shape = Rectangle((x - shape_size_x / 2, y - shape_size_y / 2),
                               shape_size_x, shape_size_y, transform=fig.transFigure,
-                              fill=(current_shape == 2), edgecolor='black', linewidth=1,
-                              facecolor='black' if current_shape == 2 else 'white')
+                              fill=(current_shape == shape_type), edgecolor='black', linewidth=1,
+                              facecolor='black' if current_shape == shape_type else 'white')
         elif shape_type == 3:
             triangle = [
                 [x, y + shape_size_y / 2],
@@ -135,22 +132,14 @@ def draw_shape_options(fig, current_shape):
                 [x + shape_size_x / 2, y - shape_size_y / 2]
             ]
             shape = Polygon(triangle, transform=fig.transFigure,
-                            fill=(current_shape == 3), edgecolor='black', linewidth=1,
-                            facecolor='black' if current_shape == 3 else 'white')
+                            fill=(current_shape == shape_type), edgecolor='black', linewidth=1,
+                            facecolor='black' if current_shape == shape_type else 'white')
         fig.patches.append(shape)
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
-    global first_plot
     try:
-        epd.init()  # Initialize the e-paper display
-
-        if first_plot:
-            epd.Clear()  # Clear the display only on the first plot
-            print("E-paper display initialized and cleared for the first plot.")
-        else:
-            print("E-paper display initialized for plot update.")
-
+        # Remove epd.init() to avoid re-initializing the display
         # Ensure the image matches the e-paper's dimensions
         image = Image.open(image_path)
         image = image.convert('1')  # Convert image to 1-bit color
@@ -160,19 +149,25 @@ def display_plot_on_epaper(epd, image_path):
         epd_height = epd.height
         image = image.resize((epd_width, epd_height), Image.ANTIALIAS)
 
-        epd.display(epd.getbuffer(image))  # Send the image buffer to the display
-        print("Plot displayed on the e-paper.")
+        # Use partial update if supported
+        # For Waveshare displays, you may need to use epd.displayPartial()
+        # Check if the method is available
+        if hasattr(epd, 'displayPartial'):
+            epd.displayPartial(epd.getbuffer(image))
+            print("Plot displayed on the e-paper using partial update.")
+        else:
+            epd.display(epd.getbuffer(image))
+            print("Plot displayed on the e-paper.")
+
     except Exception as e:
         print(f"Error displaying plot on e-paper: {e}")
 
 # Function to close the plot
 def close_plot(epd):
-    global plot_active, first_plot
+    global plot_active
     try:
         plot_active = False
-        first_plot = True  # Reset first_plot flag for next time
         print("Plot closed.")
     except Exception as e:
         print(f"Error closing plot: {e}")
         plot_active = False
-        first_plot = True  # Ensure flag is reset even on error
