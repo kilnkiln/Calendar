@@ -62,7 +62,8 @@ def plot_year_data(epd, year, shape):
     plt.subplots_adjust(top=0.85)  # Leave space at the top for the title and shapes
 
     # Set title
-    fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
+    #fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
+    fig.suptitle(f'{year}', fontsize=18, color='black', y=0.96)
 
     # Draw shapes above the plot area, inline with the title
     draw_shape_options(ax, shape)
@@ -109,7 +110,7 @@ def draw_shape_options(ax, current_shape):
     y = 0.95  # Vertical position in axes coordinates
 
     # Adjust the shape sizes independently to correct the aspect ratio
-    shape_size_x = 0.02  # Size in axes coordinates along x
+    shape_size_x = 0.018  # Size in axes coordinates along x
     shape_size_y = shape_size_x * (ax.get_figure().get_figwidth() / ax.get_figure().get_figheight()) * 1.2  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
@@ -117,12 +118,12 @@ def draw_shape_options(ax, current_shape):
         if shape_type == 1:
             # For Circle, use the minimum of shape_size_x and shape_size_y
             radius = min(shape_size_x, shape_size_y) / 2
-            shape = Circle((x, y), radius, transform=ax.transAxes,
+            shape = Circle((x, y), radius, transform=ax.transFigure,
                            fill=(current_shape == 1), edgecolor='black', linewidth=1,
                            facecolor='black' if current_shape == 1 else 'white')
         elif shape_type == 2:
             shape = Rectangle((x - shape_size_x / 2, y - shape_size_y / 2),
-                              shape_size_x, shape_size_y, transform=ax.transAxes,
+                              shape_size_x, shape_size_y, transform=ax.transFigure,
                               fill=(current_shape == 2), edgecolor='black', linewidth=1,
                               facecolor='black' if current_shape == 2 else 'white')
         elif shape_type == 3:
@@ -131,7 +132,7 @@ def draw_shape_options(ax, current_shape):
                 [x - shape_size_x / 2, y - shape_size_y / 2],
                 [x + shape_size_x / 2, y - shape_size_y / 2]
             ]
-            shape = Polygon(triangle, transform=ax.transAxes,
+            shape = Polygon(triangle, transform=ax.transFigure,
                             fill=(current_shape == 3), edgecolor='black', linewidth=1,
                             facecolor='black' if current_shape == 3 else 'white')
         ax.add_patch(shape)
