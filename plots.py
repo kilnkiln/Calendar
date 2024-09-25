@@ -108,7 +108,7 @@ def draw_shape_options(fig, current_shape):
     # Define positions and sizes in figure coordinates (0 to 1)
     shape_positions = [0.85, 0.90, 0.95]  # Positions along x-axis
     y = 0.95  # Vertical position in figure coordinates
-    shape_size = 0.05  # Size in figure coordinates
+    shape_size = 0.03  # Size in figure coordinates
 
     for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
