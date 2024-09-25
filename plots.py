@@ -62,11 +62,10 @@ def plot_year_data(epd, year, shape):
     plt.subplots_adjust(top=0.85)  # Leave space at the top for the title and shapes
 
     # Set title
-    #fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
-    fig.suptitle(f'{year}', fontsize=24, color='black', y=0.96)
+    fig.suptitle(f'{shapes[shape]} Shaded Days in {year}', fontsize=24, color='black', y=0.96)
 
     # Draw shapes above the plot area, inline with the title
-    draw_shape_options(fig, shape)
+    draw_shape_options(ax, shape)
 
     # Plot the data as a line plot
     ax.plot(months, days_count, color='black', marker='o')
@@ -103,32 +102,39 @@ def plot_year_data(epd, year, shape):
     display_plot_on_epaper(epd, plot_file)
     plot_active = True  # Mark plot as active
 
-# Function to draw the shapes above the plot area and correct dimensions
-def draw_shape_options(fig, current_shape):
-    # Define positions and sizes in figure coordinates (0 to 1)
-    shape_positions = [0.85, 0.90, 0.95]  # Positions along x-axis
-    y = 0.95  # Vertical position in figure coordinates
-    shape_size = 0.03  # Size in figure coordinates
+# Function to draw the shapes above the plot area with independent x and y dimensions
+def draw_shape_options(ax, current_shape):
+    # Define positions and sizes in axes coordinates (0 to 1)
+    shape_positions = [0.75, 0.80, 0.85]  # Positions along x-axis
+    y = 0.95  # Vertical position in axes coordinates
+
+    # Adjust the shape sizes independently to correct the aspect ratio
+    shape_size_x = 0.02  # Size in axes coordinates along x
+    shape_size_y = shape_size_x * (ax.get_figure().get_figwidth() / ax.get_figure().get_figheight()) * 1.2  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
         if shape_type == 1:
-            shape = Circle((x, y), shape_size / 2, transform=fig.transFigure,
+            # For Circle, use the minimum of shape_size_x and shape_size_y
+            radius = min(shape_size_x, shape_size_y) / 2
+            shape = Circle((x, y), radius, transform=ax.transAxes,
                            fill=(current_shape == 1), edgecolor='black', linewidth=1,
                            facecolor='black' if current_shape == 1 else 'white')
         elif shape_type == 2:
-            shape = Rectangle((x - shape_size / 2, y - shape_size / 2),
-                              shape_size, shape_size, transform=fig.transFigure,
+            shape = Rectangle((x - shape_size_x / 2, y - shape_size_y / 2),
+                              shape_size_x, shape_size_y, transform=ax.transAxes,
                               fill=(current_shape == 2), edgecolor='black', linewidth=1,
                               facecolor='black' if current_shape == 2 else 'white')
         elif shape_type == 3:
-            triangle = [[x, y + shape_size / 2],
-                        [x - shape_size / 2, y - shape_size / 2],
-                        [x + shape_size / 2, y - shape_size / 2]]
-            shape = Polygon(triangle, transform=fig.transFigure,
+            triangle = [
+                [x, y + shape_size_y / 2],
+                [x - shape_size_x / 2, y - shape_size_y / 2],
+                [x + shape_size_x / 2, y - shape_size_y / 2]
+            ]
+            shape = Polygon(triangle, transform=ax.transAxes,
                             fill=(current_shape == 3), edgecolor='black', linewidth=1,
                             facecolor='black' if current_shape == 3 else 'white')
-        fig.patches.append(shape)
+        ax.add_patch(shape)
 
 # Function to display the plot on the e-paper display
 def display_plot_on_epaper(epd, image_path):
