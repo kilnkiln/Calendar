@@ -118,12 +118,12 @@ def draw_shape_options(ax, current_shape):
         if shape_type == 1:
             # For Circle, use the minimum of shape_size_x and shape_size_y
             radius = min(shape_size_x, shape_size_y) / 2
-            shape = Circle((x, y), radius, transform=ax.transFigure,
+            shape = Circle((x, y), radius, transform=fig.transFigure,
                            fill=(current_shape == 1), edgecolor='black', linewidth=1,
                            facecolor='black' if current_shape == 1 else 'white')
         elif shape_type == 2:
             shape = Rectangle((x - shape_size_x / 2, y - shape_size_y / 2),
-                              shape_size_x, shape_size_y, transform=ax.transFigure,
+                              shape_size_x, shape_size_y, transform=fig.transFigure,
                               fill=(current_shape == 2), edgecolor='black', linewidth=1,
                               facecolor='black' if current_shape == 2 else 'white')
         elif shape_type == 3:
@@ -132,7 +132,7 @@ def draw_shape_options(ax, current_shape):
                 [x - shape_size_x / 2, y - shape_size_y / 2],
                 [x + shape_size_x / 2, y - shape_size_y / 2]
             ]
-            shape = Polygon(triangle, transform=ax.transFigure,
+            shape = Polygon(triangle, transform=fig.transFigure,
                             fill=(current_shape == 3), edgecolor='black', linewidth=1,
                             facecolor='black' if current_shape == 3 else 'white')
         ax.add_patch(shape)
