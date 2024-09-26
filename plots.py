@@ -106,14 +106,14 @@ def plot_year_data(epd, year, shape):
 # Function to draw the shapes above the plot area using fig.transFigure
 def draw_shape_options(fig, current_shape):
     # Define positions and sizes in figure coordinates (0 to 1)
-    shape_positions = [0.85, 0.90, 0.95]  # Positions along x-axis
+    shape_positions = [0.80, 0.85, 0.9]  # Positions along x-axis
     y = 0.95  # Vertical position in figure coordinates
 
     # Adjust the shape sizes independently to correct the aspect ratio
     shape_size_x = 0.025  # Width in figure coordinates
     # Calculate the aspect ratio correction factor
     aspect_ratio = fig.get_figheight() / fig.get_figwidth()
-    shape_size_y = shape_size_x * aspect_ratio * 1.5  # Adjust multiplier as needed
+    shape_size_y = shape_size_x * aspect_ratio * 1.7  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
