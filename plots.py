@@ -111,7 +111,7 @@ def draw_shape_options(fig, current_shape):
     y = 0.95  # Vertical position in figure coordinates
 
     # Adjust the shape sizes independently to correct the aspect ratio
-    shape_size_x = 0.04  # Width in figure coordinates
+    shape_size_x = 0.035  # Width in figure coordinates
     # Calculate the aspect ratio correction factor
     aspect_ratio = fig.get_figheight() / fig.get_figwidth()
     shape_size_y = shape_size_x * aspect_ratio * 1.5  # Adjust multiplier as needed
