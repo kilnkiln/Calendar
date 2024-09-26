@@ -109,7 +109,7 @@ def reset_timers():
     # Reset the timer for reverting the selection ring
     if selection_ring_timer_id:
         root.after_cancel(selection_ring_timer_id)
-    selection_ring_timer_id = root.after(30000, revert_selection_to_current_day)  # 30 seconds
+    selection_ring_timer_id = root.after(500000, revert_selection_to_current_day)  # 30 seconds
 
     # Reset the timer for sleeping the e-paper display
     if sleep_timer_id:
