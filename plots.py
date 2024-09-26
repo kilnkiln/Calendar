@@ -114,7 +114,7 @@ def draw_shape_options(fig, current_shape):
     shape_size_x = 0.025  # Width in figure coordinates
     # Calculate the aspect ratio correction factor
     aspect_ratio = fig.get_figheight() / fig.get_figwidth()
-    shape_size_y = shape_size_x * aspect_ratio * 1.5  # Adjust multiplier as needed
+    shape_size_y = shape_size_x * aspect_ratio * 1.7  # Adjust multiplier as needed
 
     for i, x in enumerate(shape_positions):
         shape_type = i + 1  # Shape IDs start from 1
