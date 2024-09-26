@@ -156,75 +156,126 @@ def render_calendar(year):
     try:
         check_and_wake_display()  # Ensure the display is awake before drawing
 
-        # Create a new image with a white background
-        image = Image.new('1', (epd.width, epd.height), 255)  # '1' for 1-bit color, 255 for white
-        draw = ImageDraw.Draw(image)
+        # Create a blank image (1-bit, black-and-white)
+        epd_width = epd.width
+        epd_height = epd.height
+        global_image = Image.new('1', (epd_width, epd_height), 255)  # 255 means white background
 
-        # Set fonts
-        font_large = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 36)
-        font_small = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 24)
+        # Create a drawing object to draw on the image
+        draw = ImageDraw.Draw(global_image)
 
-        # Draw month and year at the top
-        month_year_text = current_date.strftime("%B %Y")
-        draw.text((epd.width // 2, 10), month_year_text, font=font_large, fill=0, anchor='ma')
+        # Define fonts (adjust paths if needed)
+        font_large = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 24)
+        font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 14)
 
-        # Draw weekday labels at the top
-        weekday_font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 24)
-        weekday_y = 60  # Y-coordinate for weekday labels
-        dot_y = weekday_y + 25  # Y-coordinate for the dot under the weekday label
-        weekday_x_positions = []  # To store x-positions of weekday labels
+        # Draw the year header at the top
+        draw.text((epd_width // 2 - 50, 10), str(year), font=font_large, fill=0)
 
-        cell_width = epd.width // 7  # Assuming 7 days in a week
-        for i, weekday in enumerate(weekday_labels):
-            x = i * cell_width + cell_width // 2
-            weekday_x_positions.append(x)
-            draw.text((x, weekday_y), weekday, font=weekday_font, fill=0, anchor='mm')
+        # Draw shape options in a row at the top right
+        shape_x = epd_width - 180  # Moved further right
+        shape_y = 20
+        draw_shape_options(draw, shape_x, shape_y, font_small)
 
-        # Calculate the weekday of the selected day
-        selected_weekday = current_date.weekday()  # Monday is 0, Sunday is 6
+        # Adjust these parameters to control spacing
+        weekday_y = 80  # Move the weekdays lower by increasing this value
+        first_month_y = weekday_y + 40  # Adjust this to maintain the spacing between weekdays and month rows
 
-        # Adjust if your weekday_labels start from Sunday
-        # selected_weekday = (selected_weekday + 1) % 7  # If Sunday is 0
+        # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
+        january_start_day, _ = calendar.monthrange(year, 1)
 
-        # Draw the dot under the corresponding weekday label
-        dot_radius = 5  # Adjust size as needed
-        dot_x = weekday_x_positions[selected_weekday]
-        draw.ellipse(
-            (dot_x - dot_radius, dot_y - dot_radius, dot_x + dot_radius, dot_y + dot_radius),
-            fill=0  # Black dot
-        )
+        # Define the starting X position for the weekday row and days
+        start_x = 30  # Spacing between month label and day start
+        day_width = 25  # Width of each day cell (including spacing)
 
-        # Draw the calendar grid
-        calendar_y_start = dot_y + 20  # Starting Y-coordinate for the calendar grid
-        cell_height = (epd.height - calendar_y_start) // 6  # Adjust rows as needed
+        # Initialize selected_day_x to store the x-coordinate of the selected day
+        selected_day_x = None
 
-        # Get the calendar for the current month
-        cal = calendar.Calendar(firstweekday=0)  # 0 for Monday
-        month_days = cal.monthdayscalendar(current_date.year, current_date.month)
+        # Center the weekday labels above the corresponding days
+        weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+        for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
+            day_x = start_x + i * day_width
+            weekday_index = (january_start_day + i) % 7
 
-        for week_index, week in enumerate(month_days):
-            for day_index, day in enumerate(week):
-                if day == 0:
-                    continue  # Skip days outside the current month
-                x = day_index * cell_width + cell_width // 2
-                y = calendar_y_start + week_index * cell_height + cell_height // 2
-                day_text = str(day)
-                fill_color = 0  # Black text
+            # Calculate the center position of the weekday label
+            bbox = draw.textbbox((0, 0), weekdays[weekday_index], font=font_small)
+            text_width = bbox[2] - bbox[0]
+            text_x = day_x + (day_width - text_width) // 2
 
-                # Draw selection ring around the selected day
-                if day == current_date.day:
-                    ring_radius = min(cell_width, cell_height) // 2 - 5
-                    draw.ellipse(
-                        (x - ring_radius, y - ring_radius, x + ring_radius, y + ring_radius),
-                        outline=0  # Black ring
-                    )
-                    # Optionally, you can fill the selected day with a different color
+            draw.text((text_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
 
-                draw.text((x, y), day_text, font=font_small, fill=fill_color, anchor='mm')
+        # Start drawing months and days staggered according to the start day of the month
+        for month in range(1, 13):
+            month_name = calendar.month_name[month][:3]
 
-        # Send the image to the e-paper display
-        epd.display(epd.getbuffer(image))
-        epd.sleep()
+            # Adjust spacing between month rows
+            month_y = first_month_y + (month - 1) * (30 + 10 + 5)  # Adjust '10' to control spacing between month rows
+
+            # Adjust the position of the month label to align with day numbers
+            draw.text((5, month_y + (30 // 2)), month_name, font=font_small, fill=0)  # Adjust this value to align the month name with the days
+
+            start_day, num_days = calendar.monthrange(year, month)
+
+            # Draw days of the month in a single row
+            for day in range(1, num_days + 1):
+                day_x = start_x + (start_day + day - 1) * day_width
+                day_y = month_y
+
+                # Get the bounding box of the day number to center it
+                bbox = draw.textbbox((0, 0), str(day).zfill(2), font=font_small)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+
+                text_x = day_x + (day_width - text_width) // 2  # Center horizontally
+                text_y = day_y + (30 - text_height) // 2  # Center vertically
+
+                # Center the shape (circle, square, triangle) around the day number
+                shape_diameter = min(20, 30)  # Use the smaller of day_width and day_height
+                shape_x = day_x + (day_width - shape_diameter) // 2  # Center the shape horizontally
+                shape_y = day_y + (30 - shape_diameter) // 2  # Center the shape vertically
+
+                # Underline the current day (fixed underline)
+                if month == current_date.month and day == current_date.day:
+                    draw.line([day_x, day_y + 35, day_x + day_width, day_y + 35], fill=0, width=2)
+                    # Record the x-coordinate of the selected day
+                    selected_day_x = day_x
+
+                # Draw the selection shape if the ring is visible and the day is selected
+                if selection_ring_visible and month - 1 == current_month_index and day - 1 == current_day_index:
+                    if current_shape == 1:  # Circle
+                        draw.ellipse([shape_x - 3, shape_y - 3, shape_x + shape_diameter + 3, shape_y + shape_diameter + 3], outline=0, width=2)
+                    elif current_shape == 2:  # Square
+                        draw.rectangle([shape_x - 3, shape_y - 3, shape_x + shape_diameter + 3, shape_y + shape_diameter + 3], outline=0, width=2)
+                    elif current_shape == 3:  # Triangle
+                        draw.polygon([shape_x, shape_y + shape_diameter, shape_x + shape_diameter / 2, shape_y,
+                                      shape_x + shape_diameter, shape_y + shape_diameter], outline=0, width=2)
+
+                # Draw a shaded shape if the day is shaded and the current shape matches
+                if (month, day) in shaded_days and shaded_days[(month, day)] == current_shape:
+                    if current_shape == 1:  # Circle
+                        draw.ellipse([shape_x, shape_y, shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
+                    elif current_shape == 2:  # Square
+                        draw.rectangle([shape_x, shape_y, shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
+                    elif current_shape == 3:  # Triangle
+                        draw.polygon([shape_x, shape_y + shape_diameter, shape_x + shape_diameter / 2, shape_y,
+                                      shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
+
+                # Draw the day number
+                draw.text((text_x, text_y), str(day).zfill(2), font=font_small, fill=0)
+
+        # Draw the dot under the weekday label corresponding to the selected day
+        if selected_day_x is not None:
+            dot_radius = 3  # Adjust size as needed
+            dot_y = weekday_y + font_small.getsize('M')[1] + 5  # Position below the weekday label
+            dot_x = selected_day_x + day_width // 2  # Center of the day cell
+
+            draw.ellipse(
+                (dot_x - dot_radius, dot_y - dot_radius, dot_x + dot_radius, dot_y + dot_radius),
+                fill=0  # Black dot
+            )
+
+        # Perform the quick refresh for the calendar display
+        epd.display(epd.getbuffer(global_image))  # Quick refresh
+        print("Quick refresh performed with updated calendar.")
     except Exception as e:
         print(f"Error displaying on e-paper: {e}")
 
