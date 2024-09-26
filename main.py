@@ -180,67 +180,64 @@ def render_calendar(year):
         weekday_y = 80  # Move the weekdays lower by increasing this value
         first_month_y = weekday_y + 40  # Adjust this to maintain the spacing between weekdays and month rows
 
-        # Get the starting weekday of January 1st (0 = Monday, 6 = Sunday)
-        january_start_day, _ = calendar.monthrange(year, 1)
+        # Define weekdays
+        weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
         # Define the starting X position for the weekday row and days
         start_x = 30  # Spacing between month label and day start
         day_width = 25  # Width of each day cell (including spacing)
 
-        # Initialize selected_day_x to store the x-coordinate of the selected day
-        selected_day_x = None
-
-        # Center the weekday labels above the corresponding days
-        weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-        for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
+        # Draw weekday labels
+        for i in range(7):
             day_x = start_x + i * day_width
-            weekday_index = (january_start_day + i) % 7
-
-            # Calculate the center position of the weekday label
-            bbox = draw.textbbox((0, 0), weekdays[weekday_index], font=font_small)
+            bbox = font_small.getbbox(weekdays[i])
             text_width = bbox[2] - bbox[0]
             text_x = day_x + (day_width - text_width) // 2
-
-            draw.text((text_x, weekday_y), weekdays[weekday_index], font=font_small, fill=0)
+            draw.text((text_x, weekday_y), weekdays[i], font=font_small, fill=0)
 
         # Start drawing months and days staggered according to the start day of the month
+        selected_day_x = None  # To store x-coordinate of the selected day
         for month in range(1, 13):
             month_name = calendar.month_name[month][:3]
 
             # Adjust spacing between month rows
             month_y = first_month_y + (month - 1) * (30 + 10 + 5)  # Adjust '10' to control spacing between month rows
 
-            # Adjust the position of the month label to align with day numbers
-            draw.text((5, month_y + (30 // 2)), month_name, font=font_small, fill=0)  # Adjust this value to align the month name with the days
+            # Draw the month name
+            draw.text((5, month_y + (30 // 2)), month_name, font=font_small, fill=0)
 
             start_day, num_days = calendar.monthrange(year, month)
 
-            # Draw days of the month in a single row
+            # Draw days of the month
             for day in range(1, num_days + 1):
-                day_x = start_x + (start_day + day - 1) * day_width
-                day_y = month_y
+                # Calculate position
+                weekday_index = (start_day + day - 1) % 7
+                week_offset = (start_day + day - 1) // 7
+                day_x = start_x + weekday_index * day_width
+                day_y = month_y + week_offset * 35  # Adjust '35' to control spacing between weeks
 
-                # Get the bounding box of the day number to center it
-                bbox = draw.textbbox((0, 0), str(day).zfill(2), font=font_small)
+                # Get bounding box for centering
+                bbox = font_small.getbbox(str(day).zfill(2))
                 text_width = bbox[2] - bbox[0]
                 text_height = bbox[3] - bbox[1]
 
-                text_x = day_x + (day_width - text_width) // 2  # Center horizontally
-                text_y = day_y + (30 - text_height) // 2  # Center vertically
+                text_x = day_x + (day_width - text_width) // 2
+                text_y = day_y + (30 - text_height) // 2
 
-                # Center the shape (circle, square, triangle) around the day number
-                shape_diameter = min(20, 30)  # Use the smaller of day_width and day_height
-                shape_x = day_x + (day_width - shape_diameter) // 2  # Center the shape horizontally
-                shape_y = day_y + (30 - shape_diameter) // 2  # Center the shape vertically
+                # Center the shape
+                shape_diameter = min(20, 30)
+                shape_x = day_x + (day_width - shape_diameter) // 2
+                shape_y = day_y + (30 - shape_diameter) // 2
 
-                # Underline the current day (fixed underline)
-                if month == current_date.month and day == current_date.day:
+                # Underline the current day (today)
+                if month == current_date.month and day == current_date.day and year == current_date.year:
                     draw.line([day_x, day_y + 35, day_x + day_width, day_y + 35], fill=0, width=2)
-                    # Record the x-coordinate of the selected day
-                    selected_day_x = day_x
 
-                # Draw the selection shape if the ring is visible and the day is selected
+                # Draw selection ring if the day is selected
                 if selection_ring_visible and month - 1 == current_month_index and day - 1 == current_day_index:
+                    selected_day_x = day_x  # Store x-coordinate of the selected day
+                    selected_day_y = day_y  # Store y-coordinate of the selected day
+
                     if current_shape == 1:  # Circle
                         draw.ellipse([shape_x - 3, shape_y - 3, shape_x + shape_diameter + 3, shape_y + shape_diameter + 3], outline=0, width=2)
                     elif current_shape == 2:  # Square
@@ -249,7 +246,7 @@ def render_calendar(year):
                         draw.polygon([shape_x, shape_y + shape_diameter, shape_x + shape_diameter / 2, shape_y,
                                       shape_x + shape_diameter, shape_y + shape_diameter], outline=0, width=2)
 
-                # Draw a shaded shape if the day is shaded and the current shape matches
+                # Draw shaded shape if applicable
                 if (month, day) in shaded_days and shaded_days[(month, day)] == current_shape:
                     if current_shape == 1:  # Circle
                         draw.ellipse([shape_x, shape_y, shape_x + shape_diameter, shape_y + shape_diameter], fill=0)
@@ -265,11 +262,16 @@ def render_calendar(year):
         # Draw the dot under the weekday label corresponding to the selected day
         if selected_day_x is not None:
             dot_radius = 3  # Adjust size as needed
-            dot_y = weekday_y + font_small.getsize('M')[1] + 5  # Position below the weekday label
-            dot_x = selected_day_x + day_width // 2  # Center of the day cell
+            # Calculate dot position
+            weekday_index = (start_day + current_day_index) % 7
+            day_x = start_x + weekday_index * day_width + day_width // 2
+
+            bbox = font_small.getbbox('M')
+            text_height = bbox[3] - bbox[1]
+            dot_y = weekday_y + text_height + 5  # Position below the weekday label
 
             draw.ellipse(
-                (dot_x - dot_radius, dot_y - dot_radius, dot_x + dot_radius, dot_y + dot_radius),
+                (day_x - dot_radius, dot_y - dot_radius, day_x + dot_radius, dot_y + dot_radius),
                 fill=0  # Black dot
             )
 
