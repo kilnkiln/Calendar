@@ -191,7 +191,7 @@ def render_calendar(year):
         weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
         for i in range(40):  # Loop to fill the width of the screen with repeating weekdays
             day_x = start_x + i * day_width
-            weekday_index = (january_start_day + i) % 7
+            weekday_index = (i % 7) # Cycle through weekdays correctly
 
             # Calculate the center position of the weekday label
             bbox = draw.textbbox((0, 0), weekdays[weekday_index], font=font_small)
