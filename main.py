@@ -3,7 +3,7 @@ import tkinter as tk
 from waveshare_epd import epd13in3k
 from PIL import Image, ImageDraw, ImageFont
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 import plots  # Import the plots module
 
 # Directory to store the calendar data
@@ -271,7 +271,33 @@ current_day_index = current_date.day - 1  # Zero-based index for days
 
 # Load the shaded days for the current year
 load_shaded_days(current_year)
+#--------------
+def schedule_midnight_update():
+    """Schedule the calendar to refresh at midnight."""
+    now = datetime.now()
+    # Calculate the time remaining until midnight
+    next_midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    millis_until_midnight = int((next_midnight - now).total_seconds() * 1000)
 
+    # Schedule the function to run at midnight
+    root.after(millis_until_midnight, midnight_update)
+
+def midnight_update():
+    """Update the calendar at midnight."""
+    global current_date, current_year, current_month_index, current_day_index
+
+    # Update the current date to reflect the new day
+    current_date = datetime.now()
+    current_year = current_date.year
+    current_month_index = current_date.month - 1
+    current_day_index = current_date.day - 1
+
+    # Refresh the calendar to update the underline
+    render_calendar(current_year)
+
+    # Schedule the next update for the following midnight
+    schedule_midnight_update()
+#--------------
 # Example function to update calendar on arrow key presses with debounce
 def move_selection(direction):
     global current_day_index, current_month_index, selection_ring_visible
@@ -383,6 +409,9 @@ root.bind('3', lambda event: change_shape(3))
 # Bind keys to change the year using 'a' and 'd'
 root.bind('a', lambda event: change_year(-1))  # Press 'a' to go to the previous year
 root.bind('d', lambda event: change_year(1))   # Press 'd' to go to the next year
+
+# Schedule the first midnight update
+schedule_midnight_update()
 
 # Start the Tkinter event loop
 reset_timers()  # Start the selection ring and sleep timers
