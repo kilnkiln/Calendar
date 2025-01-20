@@ -97,7 +97,14 @@ def revert_selection_to_current_day():
 
 # Put the e-paper display to sleep after 30 seconds of inactivity
 def sleep_epaper():
-    global display_asleep
+    global display_asleep, selection_ring_visible
+
+    # Hide the selection ring
+    selection_ring_visible = False
+
+    # Render the calendar to ensure the ring is hidden
+    render_calendar(current_year)
+
     print("E-paper display going to sleep due to inactivity.")
     epd.sleep()
     display_asleep = True  # Mark the display as asleep
@@ -109,12 +116,12 @@ def reset_timers():
     # Reset the timer for reverting the selection ring
     if selection_ring_timer_id:
         root.after_cancel(selection_ring_timer_id)
-    selection_ring_timer_id = root.after(500000, revert_selection_to_current_day)  # 30 seconds
+    selection_ring_timer_id = root.after(60000, revert_selection_to_current_day)  # 1 minute
 
     # Reset the timer for sleeping the e-paper display
     if sleep_timer_id:
         root.after_cancel(sleep_timer_id)
-    sleep_timer_id = root.after(500000, sleep_epaper)  # 30 seconds for sleep
+    sleep_timer_id = root.after(180000, sleep_epaper)  # 3 minutes for sleep
 
 # Perform a quick refresh for the calendar display
 def quick_refresh():
